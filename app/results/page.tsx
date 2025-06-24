@@ -2,6 +2,7 @@
 
 import { parseAsString, useQueryState } from "nuqs";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   User,
@@ -103,6 +104,16 @@ const dummyResults = [
 ];
 
 function SearchResultCard({ result }: { result: any }) {
+  const router = useRouter();
+
+  const handleSendMessage = () => {
+    if (result.type === "user") {
+      router.push(`/chat/${result.id}`);
+    }
+    // For campaigns, you might want to redirect to a different chat or contact page
+    // For now, we'll just handle user messaging
+  };
+
   if (result.type === "user") {
     return (
       <Card className="flex flex-col h-full">
@@ -148,7 +159,10 @@ function SearchResultCard({ result }: { result: any }) {
             {result.description}
           </p>
           <div className="space-y-2">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={handleSendMessage}
+            >
               <MessageSquare className="h-4 w-4 mr-2" />
               Send Message
             </Button>
