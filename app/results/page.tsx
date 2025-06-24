@@ -1,17 +1,32 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
-import { useState } from "react";
-import { Search, Filter, SortAsc, User, Mail, Calendar, Tag } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Search,
+  User,
+  Calendar,
+  MessageSquare,
+  Users,
+  Video,
+  Clock,
+} from "lucide-react";
 import { DesktopNav, MobileNav } from "@/components/nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Dummy search data
 const dummyResults = [
@@ -25,7 +40,7 @@ const dummyResults = [
     engagement: "4.2%",
     category: "Fashion",
     verified: true,
-    lastActive: "2 hours ago"
+    lastActive: "2 hours ago",
   },
   {
     id: "2",
@@ -37,7 +52,7 @@ const dummyResults = [
     engagement: "3.8%",
     category: "Technology",
     verified: false,
-    lastActive: "1 day ago"
+    lastActive: "1 day ago",
   },
   {
     id: "3",
@@ -49,7 +64,7 @@ const dummyResults = [
     engagement: "5.1%",
     category: "Lifestyle",
     verified: true,
-    lastActive: "3 hours ago"
+    lastActive: "3 hours ago",
   },
   {
     id: "4",
@@ -60,7 +75,7 @@ const dummyResults = [
     reach: "245K",
     engagement: "6.2%",
     budget: "$5,200",
-    duration: "30 days"
+    duration: "30 days",
   },
   {
     id: "5",
@@ -72,7 +87,7 @@ const dummyResults = [
     engagement: "4.7%",
     category: "Fitness",
     verified: true,
-    lastActive: "5 hours ago"
+    lastActive: "5 hours ago",
   },
   {
     id: "6",
@@ -83,46 +98,60 @@ const dummyResults = [
     reach: "189K",
     engagement: "4.9%",
     budget: "$3,800",
-    duration: "14 days"
-  }
+    duration: "14 days",
+  },
 ];
 
 function SearchResultCard({ result }: { result: any }) {
   if (result.type === "user") {
     return (
-      <Card className="hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="w-12 h-12">
-              <AvatarImage src={result.profilePicture} />
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-                {result.title.charAt(1).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold">{result.title}</h3>
-                {result.verified && (
-                  <Badge variant="secondary" className="text-xs">Verified</Badge>
-                )}
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{result.description}</p>
-              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                <span className="flex items-center gap-1">
-                  <User className="w-3 h-3" />
-                  {result.followers} followers
-                </span>
-                <span>{result.engagement} engagement</span>
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  {result.lastActive}
-                </span>
-              </div>
+      <Card className="flex flex-col h-full">
+        <CardHeader>
+          <div className="flex justify-between items-start w-full">
+            <div>
+              <Badge
+                variant="secondary"
+                className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-100 mb-2"
+              >
+                {result.category}
+              </Badge>
+              <h3 className="font-semibold text-xl text-gray-800 dark:text-white">
+                {result.title}
+              </h3>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <Badge variant="outline">{result.category}</Badge>
-              <Button size="sm">View Profile</Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="outline" className="h-8 w-8">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View Profile</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </CardHeader>
+        <CardContent className="flex-grow">
+          <div className="flex flex-col items-start justify-between mb-4 space-y-2">
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+              <Users className="h-4 w-4 mr-1" />
+              <span>{result.followers} Followers</span>
             </div>
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+              <Clock className="h-4 w-4 mr-1" />
+              <span>Last active: {result.lastActive}</span>
+            </div>
+          </div>
+          <p className="text-sm text-gray-700 dark:text-gray-200 mb-4">
+            {result.description}
+          </p>
+          <div className="space-y-2">
+            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Send Message
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -131,28 +160,49 @@ function SearchResultCard({ result }: { result: any }) {
 
   if (result.type === "campaign") {
     return (
-      <Card className="hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold">{result.title}</h3>
-                <Badge variant={result.status === "Active" ? "default" : "secondary"}>
-                  {result.status}
-                </Badge>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{result.description}</p>
-              <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
-                <span>{result.reach} reach</span>
-                <span>{result.engagement} engagement</span>
-                <span>{result.budget} budget</span>
-                <span>{result.duration}</span>
-              </div>
+      <Card className="flex flex-col h-full">
+        <CardHeader>
+          <div className="flex justify-between items-start w-full">
+            <div>
+              <Badge
+                variant={result.status === "Active" ? "default" : "secondary"}
+                className="mb-2"
+              >
+                {result.status}
+              </Badge>
+              <h3 className="font-semibold text-xl text-gray-800 dark:text-white">
+                {result.title}
+              </h3>
             </div>
-            <div className="flex flex-col gap-2">
-              <Button size="sm" variant="outline">View Campaign</Button>
-              <Button size="sm">Edit</Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="icon" variant="outline" className="h-8 w-8">
+                    <Calendar className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View Campaign Details</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </CardHeader>
+        <CardContent className="flex-grow">
+          <div className="flex flex-col items-start justify-between mb-4 space-y-2">
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+              <Clock className="h-4 w-4 mr-1" />
+              <span>Duration: {result.duration}</span>
             </div>
+          </div>
+          <p className="text-sm text-gray-700 dark:text-gray-200 mb-4">
+            {result.description}
+          </p>
+          <div className="space-y-2">
+            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Send Message
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -164,8 +214,6 @@ function SearchResultCard({ result }: { result: any }) {
 
 export default function SearchResultsPage() {
   const [query, setQuery] = useQueryState("query", parseAsString.withDefault(""));
-  const [sortBy, setSortBy] = useState("relevance");
-  const [filterType, setFilterType] = useState("all");
 
   // Filter and sort results based on query and filters
   const filteredResults = dummyResults
@@ -178,22 +226,7 @@ export default function SearchResultsPage() {
         result.description.toLowerCase().includes(searchTerm) ||
         (result.category && result.category.toLowerCase().includes(searchTerm));
       
-      if (filterType === "all") return matchesQuery;
-      return matchesQuery && result.type === filterType;
-    })
-    .sort((a, b) => {
-      if (sortBy === "relevance") {
-        // Simple relevance based on title match
-        const aMatch = a.title.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
-        const bMatch = b.title.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
-        return bMatch - aMatch;
-      }
-      if (sortBy === "followers" && a.followers && b.followers) {
-        const aNum = parseInt(a.followers.replace(/[^\d]/g, ""));
-        const bNum = parseInt(b.followers.replace(/[^\d]/g, ""));
-        return bNum - aNum;
-      }
-      return 0;
+      return matchesQuery;
     });
 
   const handleSearch = (newQuery: string) => {
@@ -233,49 +266,21 @@ export default function SearchResultsPage() {
               </div>
             </div>
 
-            {/* Filters and Sort */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="user">Users</SelectItem>
-                    <SelectItem value="campaign">Campaigns</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <SortAsc className="w-4 h-4" />
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-36">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="relevance">Relevance</SelectItem>
-                    <SelectItem value="followers">Followers</SelectItem>
-                    <SelectItem value="engagement">Engagement</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="ml-auto text-sm text-gray-500">
+            {/* Result Count */}
+            <div className="flex justify-end mb-6">
+              <div className="text-sm text-gray-500">
                 {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''} found
               </div>
             </div>
 
             {/* Results */}
-            <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredResults.length > 0 ? (
                 filteredResults.map((result) => (
                   <SearchResultCard key={result.id} result={result} />
                 ))
               ) : (
-                <Card>
+                <Card className="col-span-full">
                   <CardContent className="p-12 text-center">
                     <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No results found</h3>

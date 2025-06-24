@@ -63,6 +63,7 @@
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^0.0.55",
     "react-textarea-autosize": "^8.5.3",
+    "react-use-measure": "^2.1.7",
     "react-wrap-balancer": "^1.1.0",
     "recharts": "^2.15.4",
     "rxdb": "^14.17.1",

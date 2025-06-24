@@ -75,32 +75,6 @@ export function MobileNav({
           </div>
         </SheetContent>
       </Sheet>
-
-      {/* CAMPAIGN SEARCH / GLOBAL SEARCH */}
-      {filterByCountryId ? (
-        <div className="relative ml-auto flex-1 md:grow-0">
-          <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder={
-              filterByCountryId
-                ? `Search ${extractAndDecodeTripName(filterByCountryId)}
-                    `
-                : "Search All..."
-            }
-            className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-        </div>
-      ) : (
-        <div className="ml-auto flex-1 md:grow-0 max-w-md">
-          <GlobalSearch 
-            placeholder="Search users, campaigns..."
-            className="w-full"
-          />
-        </div>
-      )}
     </header>
   );
 }
