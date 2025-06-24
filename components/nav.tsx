@@ -11,6 +11,7 @@ import {
   SearchIcon,
   UserIcon,
   MicIcon,
+  HelpCircleIcon,
 } from "lucide-react";
 import { extractAndDecodeTripName } from "@/lib/utils";
 import { useRxData } from "rxdb-hooks";
@@ -26,6 +27,12 @@ export function MobileNav({
   filterByCountryId,
   searchQuery,
   handleSearchChange,
+  onTourTrigger,
+}: {
+  filterByCountryId: any;
+  searchQuery: string;
+  handleSearchChange: (e: any) => void;
+  onTourTrigger?: () => void;
 }) {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4  bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -69,7 +76,16 @@ export function MobileNav({
           {/* CAMPAIGN HISTORY */}
           <div className="h-[calc(100vh-250px)] justify-between flex flex-col  items-start  w-full  pr-12">
             <NavCampaignHistory />
-            <div className=" pl-6">
+            <div className="flex flex-col gap-4 pl-6">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={onTourTrigger}
+                className="justify-start gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <HelpCircleIcon className="h-4 w-4" />
+                Product Tour
+              </Button>
               <ModeToggle />
             </div>
           </div>
@@ -79,7 +95,7 @@ export function MobileNav({
   );
 }
 
-export function DesktopNav() {
+export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
   const pathname = usePathname();
   
   const isActive = (path: string) => {
@@ -184,6 +200,18 @@ export function DesktopNav() {
       </nav>
       
       <nav className="mt-auto flex flex-col items-center gap-4 px-2 pb-4">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onTourTrigger}
+              className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors text-muted-foreground hover:text-foreground md:h-8 md:w-8"
+            >
+              <HelpCircleIcon className="h-5 w-5" />
+              <span className="sr-only">Product Tour</span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">Product Tour</TooltipContent>
+        </Tooltip>
         <ModeToggle />
       </nav>
     </aside>
