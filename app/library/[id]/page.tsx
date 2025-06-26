@@ -76,8 +76,20 @@ export default function ListDetailPage() {
     removeAccountFromList,
   } = useInstagramLists();
 
-  // Find current list
-  const currentList = lists.find((list: any) => list.id === listId);
+  // Find current list and convert to plain object
+  const currentListDoc = lists.find((list: any) => {
+    return list.get('id') === listId;
+  });
+  const currentList = currentListDoc ? {
+    id: currentListDoc.get('id'),
+    name: currentListDoc.get('name'),
+    description: currentListDoc.get('description'),
+    color: currentListDoc.get('color'),
+    createdAt: currentListDoc.get('createdAt'),
+    query: currentListDoc.get('query'),
+    accountCount: currentListDoc.get('accountCount'),
+  } : null;
+
   const listAccounts = getListAccounts(listId);
 
   // Get accounts not in this list (for adding)
@@ -106,7 +118,7 @@ export default function ListDetailPage() {
   useEffect(() => {
     if (currentList) {
       setListFormData({
-        name: currentList.name,
+        name: currentList.name || "",
         description: currentList.description || "",
         color: currentList.color || "purple",
       });

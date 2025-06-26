@@ -15,6 +15,31 @@ export async function POST(req: Request) {
 
         console.log("Messages received:", messages?.length || 0);
 
+        // Fetch user credentials
+        let instagramUsername = "";
+        let instagramPassword = "";
+        
+        try {
+            const credentialsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/user-credentials`);
+            if (credentialsResponse.ok) {
+                const credentials = await credentialsResponse.json();
+                instagramUsername = credentials.instagramUsername;
+                instagramPassword = credentials.instagramPassword;
+            }
+        } catch (error) {
+            console.error("Failed to fetch user credentials, falling back to env vars:", error);
+            instagramUsername = process.env.INSTAGRAM_USERNAME || "";
+            instagramPassword = process.env.INSTAGRAM_PASSWORD || "";
+        }
+
+        // Validate that we have credentials
+        if (!instagramUsername || !instagramPassword) {
+            return new Response(
+                JSON.stringify({ error: "Instagram credentials not configured. Please add your credentials in Account Settings." }), 
+                { status: 400, headers: { "Content-Type": "application/json" } }
+            );
+        }
+
         const mcpClient = await experimental_createMCPClient({
             transport: new StdioMCPTransport({
                 command: "uv",
@@ -25,9 +50,9 @@ export async function POST(req: Request) {
                     "python",
                     "src/mcp_server.py",
                     "--username",
-                    process.env.INSTAGRAM_USERNAME || "",
+                    instagramUsername,
                     "--password",
-                    process.env.INSTAGRAM_PASSWORD || "",
+                    instagramPassword,
                 ],
             }),
         });

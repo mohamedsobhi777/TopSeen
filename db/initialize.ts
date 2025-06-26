@@ -118,6 +118,31 @@ const instagramListItemsSchema = {
   required: ["id", "listId", "accountId", "addedAt"],
 };
 
+// User settings schema for storing user preferences and credentials
+const userSettingsSchema = {
+  version: 0,
+  primaryKey: "userId",
+  type: "object",
+  properties: {
+    userId: { type: "string", maxLength: 100 },
+    email: { type: "string", maxLength: 200 },
+    name: { type: "string", maxLength: 200 },
+    profilePictureUrl: { type: "string", format: "uri" },
+    subscription: { type: "string", enum: ["free", "pro", "enterprise"] },
+    monthlyMessageLimit: { type: "integer", minimum: 0 },
+    currentMonthUsage: { type: "integer", minimum: 0 },
+    accountsLimit: { type: "integer", minimum: 0 },
+    currentAccountsCount: { type: "integer", minimum: 0 },
+    instagramUsername: { type: "string", maxLength: 100 },
+    instagramPassword: { type: "string", maxLength: 200 },
+    isActive: { type: "boolean" },
+    createdAt: { type: "string", format: "date-time" },
+    lastLoginAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+  },
+  required: ["userId", "email", "subscription", "isActive"],
+};
+
 export const initialize = async () => {
   // Add plugins required for RxDB
   await addRxPlugin(RxDBDevModePlugin);
@@ -146,6 +171,9 @@ export const initialize = async () => {
     },
     instagram_list_items_v0: {
       schema: instagramListItemsSchema,
+    },
+    user_settings_v0: {
+      schema: userSettingsSchema,
     },
   });
 

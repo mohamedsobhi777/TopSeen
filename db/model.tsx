@@ -277,4 +277,6 @@ export interface UserAccount {
   isActive: boolean;
   voiceSettings?: VoiceSettings;
   voiceClones?: VoiceClone[];
+  instagramUsername?: string;
+  instagramPassword?: string;
 }

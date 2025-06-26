@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Settings, CreditCard, BarChart3, MessageCircle, Users, Calendar, Crown } from "lucide-react";
 import { DesktopNav, MobileNav } from "@/components/nav";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Gauge } from "@/components/ui/gauge";
 import { UserAccount } from "@/db/model";
+import { Instagram, Eye, EyeOff } from "lucide-react";
 
 // Mock user data
 const mockUser: UserAccount = {
@@ -29,6 +30,8 @@ const mockUser: UserAccount = {
   createdAt: "2024-01-15T00:00:00Z",
   lastLoginAt: "2024-01-20T10:30:00Z",
   isActive: true,
+  instagramUsername: "",
+  instagramPassword: "",
 };
 
 function StatsCard({ title, value, subtitle, icon: Icon, color = "blue", percentage }: {
@@ -91,6 +94,143 @@ function StatsCard({ title, value, subtitle, icon: Icon, color = "blue", percent
   );
 }
 
+function InstagramCredentialsForm({ user, onUpdate }: { 
+  user: UserAccount; 
+  onUpdate: (user: UserAccount) => void; 
+}) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    instagramUsername: user.instagramUsername || "",
+    instagramPassword: user.instagramPassword || "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  // Update form data when user prop changes
+  useEffect(() => {
+    setFormData({
+      instagramUsername: user.instagramUsername || "",
+      instagramPassword: user.instagramPassword || "",
+    });
+  }, [user.instagramUsername, user.instagramPassword]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/user-settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        onUpdate({ 
+          ...user, 
+          instagramUsername: formData.instagramUsername,
+          instagramPassword: formData.instagramPassword,
+        });
+        setIsSuccess(true);
+        setTimeout(() => setIsSuccess(false), 3000);
+      } else {
+        console.error('Failed to update credentials');
+      }
+    } catch (error) {
+      console.error('Error updating credentials:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="instagram-username">Instagram Username</Label>
+          <div className="relative">
+            <Instagram className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              id="instagram-username"
+              type="text"
+              placeholder="your_username"
+              value={formData.instagramUsername}
+              onChange={(e) => handleInputChange('instagramUsername', e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <p className="text-xs text-gray-500">
+            Enter your Instagram username (without @)
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="instagram-password">Instagram Password</Label>
+          <div className="relative">
+            <Input
+              id="instagram-password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              value={formData.instagramPassword}
+              onChange={(e) => handleInputChange('instagramPassword', e.target.value)}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+          <p className="text-xs text-gray-500">
+            Your password is encrypted and stored securely
+          </p>
+        </div>
+      </div>
+
+      <div className="flex gap-2 pt-4">
+        <Button 
+          type="submit" 
+          disabled={isLoading || !formData.instagramUsername || !formData.instagramPassword}
+          className="flex-1"
+        >
+          {isLoading ? "Saving..." : "Save Credentials"}
+        </Button>
+        {isSuccess && (
+          <div className="flex items-center text-green-600 text-sm">
+            ✓ Saved successfully
+          </div>
+        )}
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="flex items-start gap-2">
+          <Instagram className="h-4 w-4 text-blue-600 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-medium text-blue-900">Why do we need your credentials?</p>
+            <p className="text-blue-700 mt-1">
+              We use your Instagram credentials to send automated messages and discover accounts. 
+              Your credentials are encrypted and never shared with third parties.
+            </p>
+          </div>
+        </div>
+      </div>
+    </form>
+  );
+}
+
 function SubscriptionCard({ user }: { user: UserAccount }) {
   const usagePercentage = (user.currentMonthUsage / user.monthlyMessageLimit) * 100;
   const accountsPercentage = (user.currentAccountsCount / user.accountsLimit) * 100;
@@ -150,6 +290,35 @@ function SubscriptionCard({ user }: { user: UserAccount }) {
 
 export default function AccountPage() {
   const [user, setUser] = useState<UserAccount>(mockUser);
+  const [instagramConnected, setInstagramConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch user settings on component mount
+  useEffect(() => {
+    const fetchUserSettings = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/user-settings');
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          console.error('Failed to fetch user settings');
+        }
+      } catch (error) {
+        console.error('Error fetching user settings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserSettings();
+  }, []);
+
+  // Update Instagram connection status when user changes
+  useEffect(() => {
+    setInstagramConnected(!!(user.instagramUsername && user.instagramPassword));
+  }, [user.instagramUsername, user.instagramPassword]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-black/80">
@@ -262,66 +431,32 @@ export default function AccountPage() {
         <TabsContent value="settings" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Account Settings</CardTitle>
-              <CardDescription>Configure your account preferences</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Instagram className="w-5 h-5" />
+                    Instagram Credentials
+                  </CardTitle>
+                  <CardDescription>
+                    Connect your Instagram account for automated messaging and account discovery
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${instagramConnected ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                  <span className={`text-sm font-medium ${instagramConnected ? 'text-green-600' : 'text-gray-500'}`}>
+                    {instagramConnected ? 'Connected' : 'Not Connected'}
+                  </span>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h4 className="font-medium mb-4">Notifications</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Email notifications</p>
-                      <p className="text-xs text-gray-500">Receive updates about your campaigns</p>
-                    </div>
-                    <Button variant="outline" size="sm">Configure</Button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">SMS notifications</p>
-                      <p className="text-xs text-gray-500">Get alerts for important updates</p>
-                    </div>
-                    <Button variant="outline" size="sm">Configure</Button>
-                  </div>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-gray-500">Loading credentials...</div>
                 </div>
-              </div>
-              
-              <Separator />
-              
-              <div>
-                <h4 className="font-medium mb-4">Security</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Change password</p>
-                      <p className="text-xs text-gray-500">Update your account password</p>
-                    </div>
-                    <Button variant="outline" size="sm">Change</Button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Two-factor authentication</p>
-                      <p className="text-xs text-gray-500">Add extra security to your account</p>
-                    </div>
-                    <Button variant="outline" size="sm">Enable</Button>
-                  </div>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div>
-                <h4 className="font-medium mb-4 text-red-600">Danger Zone</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Delete account</p>
-                      <p className="text-xs text-gray-500">Permanently delete your account and all data</p>
-                    </div>
-                    <Button variant="destructive" size="sm">Delete</Button>
-                  </div>
-                </div>
-              </div>
+              ) : (
+                <InstagramCredentialsForm user={user} onUpdate={setUser} />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
