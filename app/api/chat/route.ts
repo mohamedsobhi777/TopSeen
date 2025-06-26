@@ -1,112 +1,118 @@
-import { gateway } from "@vercel/ai-sdk-gateway"
-import { convertToModelMessages, streamText } from "ai"
-import { z } from "zod"
-
-import { advancedFilterSearch } from "./advancedFilterSearch"
-import { fuzzySearch } from "./fuzzySearch"
-import { hybridSearch } from "./hybridSearch"
-import { semanticSearch } from "./semanticSearch"
-import { simpleNameSearch } from "./simpleNameSearch"
-
-// Simplified schema for AI SDK 5 alpha compatibility
-const filtersSchema = z.object({
-  city: z.string().describe("City or location"),
-  gender: z.string().describe("Gender (male, female, non-binary, etc.)"),
-  tags: z
-    .array(z.string())
-    .describe("Tags or specialties (ai, fintech, climate, etc.)"),
-      nationality: z.string().describe("Nationality"),
-  age: z.string().describe("Age range"),
-  industry: z.string().describe("Industry or sector"),
-})
+import { anthropic } from "@ai-sdk/anthropic";
+import { gateway } from "@vercel/ai-sdk-gateway";
+import { convertToModelMessages, experimental_createMCPClient, streamText } from "ai";
+import { Experimental_StdioMCPTransport as StdioMCPTransport } from "ai/mcp-stdio";
+import { env } from "process";
 
 // Allow streaming responses up to 30 seconds
-export const maxDuration = 30
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  try {
-    console.log("Chat API called")
+    try {
+        console.log("Instagram Chat API called");
 
-    const { messages } = await req.json()
-    console.log("Messages received:", messages?.length || 0)
+        const { messages } = await req.json();
 
-    console.log("Starting streamText with Vercel AI Gateway")
-    const result = streamText({
-      model: gateway("anthropic/claude-4-sonnet-20250514"),
-      system: (() => {
-        // Configuration for which tools to enable in the system prompt
-        const enabledTools = {
-          simpleNameSearch: true,
-          semanticSearch: false,
-          hybridSearch: false,
-          fuzzySearch: false,
-          advancedFilterSearch: false,
-        }
+        console.log("Messages received:", messages?.length || 0);
 
-        // Base system prompt
-        let systemPrompt = `You are a helpful assistant for a founder discovery platform. You help users find and connect with startup founders based on their criteria.
+        const mcpClient = await experimental_createMCPClient({
+            transport: new StdioMCPTransport({
+                command: "uv",
+                args: [
+                    "run",
+                    "--directory",
+                    "/Users/mohamedmorsi/Business/TopSeen/instagram_dm_mcp",
+                    "python",
+                    "src/mcp_server.py",
+                    "--username",
+                    process.env.INSTAGRAM_USERNAME || "",
+                    "--password",
+                    process.env.INSTAGRAM_PASSWORD || "",
+                ],
+            }),
+        });
 
-Your primary role is to:
-1. Understand what type of search the user wants to perform
-2. Choose the appropriate search tool based on the query type
-3. Present founders in a helpful and organized way
-4. Provide insights about the search results
+        const mcp_tools = await mcpClient.tools();
 
-Available search tools:`
+        // const allowed_tools = ["instagram_account_discovery", "message_crafting", "relationship_management", "automation_strategy"];
 
-        // Conditionally add tool descriptions based on configuration
-        if (enabledTools.simpleNameSearch) {
-          systemPrompt += `\n- **simpleNameSearch**: For finding founders by name (e.g., "find Maria", "show me John Smith")`
-        }
-        if (enabledTools.semanticSearch) {
-          systemPrompt += `\n- **semanticSearch**: For conceptual queries (e.g., "AI founders", "climate tech entrepreneurs")`
-        }
-        if (enabledTools.hybridSearch) {
-          systemPrompt += `\n- **hybridSearch**: For combining semantic understanding with specific filters`
-        }
-        if (enabledTools.fuzzySearch) {
-          systemPrompt += `\n- **fuzzySearch**: For handling typos and partial matches`
-        }
-        if (enabledTools.advancedFilterSearch) {
-          systemPrompt += `\n- **advancedFilterSearch**: For specific criteria combinations`
-        }
+        // console.log("MCP Tools:", JSON.stringify(mcp_tools, null, 2));
 
-        systemPrompt += `\n\nChoose the most appropriate tool based on the user's query:`
+        // Use the gateway model with type assertion for AI SDK 5 Beta compatibility
+        // const model = gateway("anthropic/claude-4-sonnet") as any;
+        const model = anthropic("claude-4-sonnet-20250514");
 
-        // Conditionally add usage guidance based on configuration
-        if (enabledTools.simpleNameSearch) {
-          systemPrompt += `\n- Use simpleNameSearch for name-based queries`
-        }
-        if (enabledTools.semanticSearch) {
-          systemPrompt += `\n- Use semanticSearch for industry/concept queries without specific filters`
-        }
-        if (enabledTools.hybridSearch) {
-          systemPrompt += `\n- Use hybridSearch when combining concepts with location, gender, or other filters`
-        }
-        if (enabledTools.fuzzySearch) {
-          systemPrompt += `\n- Use fuzzySearch when you detect potential typos or need partial matching`
-        }
-        if (enabledTools.advancedFilterSearch) {
-          systemPrompt += `\n- Use advancedFilterSearch for complex filter combinations`
-        }
+        console.log(`Messages: ${JSON.stringify(convertToModelMessages(messages), null, 2)}`);
 
-        systemPrompt += `\n\nIf no relevant founders are found, suggest alternative search criteria or ask clarifying questions.`
+        const result = streamText({
+            model,
+            system: `You are TopSeen AI, an intelligent assistant for Instagram DM automation and influencer outreach. Your primary role is to help users discover, connect with, and manage relationships with Instagram influencers, creators, and businesses.
 
-        return systemPrompt
-      })(),
-      messages: convertToModelMessages(messages),
-      tools: {
-        simpleNameSearch: simpleNameSearch,
-        // semanticSearch: semanticSearch,
-        hybridSearch: hybridSearch,
-        // fuzzySearch: fuzzySearch,
-        // advancedFilterSearch: advancedFilterSearch,
-      },
-    })
+You are having a conversation with the following user: ${process.env.RECEIVER_USERNAME}
+        
+Your capabilities include:
+1. **Instagram Account Discovery**: Help users find relevant Instagram accounts based on their criteria (niche, follower count, engagement, location, etc.)
+2. **Message Crafting**: Create personalized, effective DM messages for different purposes:
+   - Initial outreach and introductions
+   - Collaboration proposals
+   - Follow-up messages
+   - Thank you notes
+   - Campaign invitations
+3. **Relationship Management**: Provide insights on managing influencer relationships and campaign tracking
+4. **Automation Strategy**: Suggest best practices for Instagram DM automation while maintaining authenticity
 
-    return result.toUIMessageStreamResponse()
-  } catch (error) {
-    console.error("Chat API error:", error)
-    return new Response("Internal server error", { status: 500 })
-  }
+Mood/Tone Options:
+- **Professional**: Formal, business-appropriate, respectful
+- **Friendly**: Warm, casual, approachable
+- **Flirty**: Playful, charming, subtly romantic (use appropriately)
+- **Nerdy**: Technical, detailed, enthusiastic about expertise
+- **Witty**: Humorous, clever, entertaining
+
+Guidelines:
+- Always prioritize authentic, value-driven communication over pushy sales tactics
+- Respect Instagram's terms of service and avoid spam-like behavior
+- Suggest personalization based on the recipient's content and interests
+- Provide alternative message options and A/B testing suggestions
+- Consider timing, frequency, and relationship building in your recommendations
+- Help users build genuine connections that lead to long-term partnerships
+
+When users ask about sending messages:
+1. Craft the message based on their requirements
+2. Explain why the approach will be effective
+3. Provide alternative options if relevant
+4. Suggest the best timing and follow-up strategy
+
+Example interactions:
+- "Draft a friendly message to @fashionista_emily about collaboration"
+- "Create a professional outreach message for tech influencers" 
+- "Help me follow up with @lifestyle_sarah about our previous conversation"
+
+Always provide actionable, specific advice for Instagram outreach and relationship building.`,
+            // messages: convertToModelMessages(messages).map((msg, idx, arr) => {
+            //     if (idx === arr.length - 1) {
+            //         return {
+            //             ...msg,
+            //             providerOptions: {
+            //                 anthropic: { cacheControl: { type: "ephemeral" } },
+            //             },
+            //         };
+            //     }
+            //     return msg;
+            // }),
+            messages: convertToModelMessages(messages),
+            tools: mcp_tools,
+            onFinish: async () => {
+                await mcpClient.close();
+            },
+            onError: async (error) => {
+                console.error("Error:", error);
+                await mcpClient.close();
+            }
+        });
+
+        return result.toUIMessageStreamResponse();
+    } catch (error) {
+        console.error("Instagram Chat API error:", error);
+        return new Response("Internal server error", { status: 500 });
+    }
 }

@@ -67,10 +67,10 @@ export default function VoicePage() {
     <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-black/80">
       <DesktopNav />
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <MobileNav 
+        <MobileNav
           filterByCountryId={null}
           searchQuery=""
-          handleSearchChange={() => {}}
+          handleSearchChange={() => { }}
         />
         <main className="flex-1">
           <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -167,9 +167,8 @@ export default function VoicePage() {
                     <div className="space-y-4">
                       <h4 className="font-medium">Record Audio Sample</h4>
                       <div className="border rounded-lg p-8 text-center hover:shadow-sm transition-shadow">
-                        <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-colors ${
-                          isRecording ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600'
-                        }`}>
+                        <div className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-colors ${isRecording ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+                          }`}>
                           <Mic className="w-8 h-8" />
                         </div>
                         <p className="text-sm text-gray-600 mb-4">
@@ -248,7 +247,7 @@ export default function VoicePage() {
                                   </>
                                 )}
                               </Button>
-                              
+
                               {!voice.isDefault && (
                                 <Button
                                   variant="outline"
@@ -260,7 +259,7 @@ export default function VoicePage() {
                               )}
                             </>
                           )}
-                          
+
                           {!voice.isDefault && (
                             <Button
                               variant="outline"
@@ -315,7 +314,7 @@ export default function VoicePage() {
                           defaultChecked
                         />
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <h4 className="font-medium">Voice Quality</h4>
