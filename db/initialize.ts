@@ -60,6 +60,30 @@ const travelItinerarySchema = {
   required: ["id", "title", "status", "startDateTime", "sequence"],
 };
 
+// Instagram accounts schema for autocomplete and library management
+const instagramAccountsSchema = {
+  version: 0,
+  primaryKey: "id",
+  type: "object",
+  properties: {
+    id: { type: "string", maxLength: 100 },
+    username: { type: "string", maxLength: 100 },
+    name: { type: "string", maxLength: 200 },
+    followers: { type: "string", maxLength: 20 },
+    category: { type: "string", maxLength: 100 },
+    verified: { type: "boolean" },
+    bio: { type: "string", maxLength: 500 },
+    profilePictureUrl: { type: "string", format: "uri" },
+    isPrivate: { type: "boolean" },
+    followerCount: { type: "integer", minimum: 0 },
+    followingCount: { type: "integer", minimum: 0 },
+    postCount: { type: "integer", minimum: 0 },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+  },
+  required: ["id", "username", "name", "category", "verified"],
+};
+
 export const initialize = async () => {
   // Add plugins required for RxDB
   await addRxPlugin(RxDBDevModePlugin);
@@ -79,6 +103,9 @@ export const initialize = async () => {
     },
     trip_itinerary_v0: {
       schema: travelItinerarySchema,
+    },
+    instagram_accounts_v0: {
+      schema: instagramAccountsSchema,
     },
   });
 

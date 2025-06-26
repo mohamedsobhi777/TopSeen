@@ -184,6 +184,23 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
+              href="/library"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
+                isActive("/library") 
+                  ? "bg-accent text-accent-foreground" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <ClipboardListIcon className="h-5 w-5" />
+              <span className="sr-only">Library</span>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">Instagram Library</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
               href="/account"
               className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
                 isActive("/account") 

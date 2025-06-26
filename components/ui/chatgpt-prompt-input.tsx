@@ -41,19 +41,7 @@ const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => ( <svg width="20
 
 const moodsList = [ { id: 'professional', name: 'Professional tone', shortName: 'Professional', icon: PencilIcon }, { id: 'friendly', name: 'Friendly and casual', shortName: 'Friendly', icon: LightbulbIcon }, { id: 'flirty', name: 'Flirty and playful', shortName: 'Flirty', icon: PaintBrushIcon }, { id: 'nerdy', name: 'Nerdy and technical', shortName: 'Nerdy', icon: TelescopeIcon }, { id: 'witty', name: 'Witty and humorous', shortName: 'Witty', icon: GlobeIcon }, ];
 
-// Hardcoded Instagram accounts for autocomplete
-const instagramAccounts = [
-  { id: '1', username: 'fashionista_emily', name: 'Emily Johnson', followers: '125K', category: 'Fashion', verified: true },
-  { id: '2', username: 'tech_guru_mike', name: 'Mike Chen', followers: '89K', category: 'Technology', verified: false },
-  { id: '3', username: 'lifestyle_sarah', name: 'Sarah Wilson', followers: '67K', category: 'Lifestyle', verified: true },
-  { id: '4', username: 'foodie_alex', name: 'Alex Rodriguez', followers: '234K', category: 'Food', verified: true },
-  { id: '5', username: 'travel_nomad', name: 'Jordan Kim', followers: '156K', category: 'Travel', verified: false },
-  { id: '6', username: 'fitness_motivation', name: 'Maya Patel', followers: '98K', category: 'Fitness', verified: true },
-  { id: '7', username: 'art_creative', name: 'Sam Thompson', followers: '45K', category: 'Art', verified: false },
-  { id: '8', username: 'music_beats', name: 'Chris Williams', followers: '78K', category: 'Music', verified: true },
-  { id: '9', username: 'gaming_pro', name: 'Taylor Davis', followers: '189K', category: 'Gaming', verified: false },
-  { id: '10', username: 'beauty_tips', name: 'Zoe Martinez', followers: '112K', category: 'Beauty', verified: true },
-];
+import { useInstagramAccounts } from "@/lib/hooks/use-instagram-accounts";
 
 // --- The Final, Self-Contained PromptBox Component ---
 interface PromptBoxProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onSubmit' | 'value' | 'onChange'> {
@@ -74,6 +62,9 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
     const [selectedMood, setSelectedMood] = React.useState<string | null>(null);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isImageDialogOpen, setIsImageDialogOpen] = React.useState(false);
+    
+    // Instagram accounts from database
+    const { searchAccounts } = useInstagramAccounts();
     
     // Autocomplete state
     const [autocompleteState, setAutocompleteState] = React.useState({
@@ -99,13 +90,10 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
 
     // Filter Instagram accounts based on query
     const filteredAccounts = React.useMemo(() => {
-      if (!autocompleteState.query) return instagramAccounts.slice(0, 5);
-      
-      return instagramAccounts.filter(account => 
-        account.username.toLowerCase().includes(autocompleteState.query.toLowerCase()) ||
-        account.name.toLowerCase().includes(autocompleteState.query.toLowerCase())
-      ).slice(0, 5);
-    }, [autocompleteState.query]);
+      return searchAccounts(autocompleteState.query).map((accountDoc: any) => {
+        return accountDoc.toJSON ? accountDoc.toJSON() : accountDoc;
+      });
+    }, [autocompleteState.query, searchAccounts]);
 
     // Find mention trigger in text
     const findMentionTrigger = React.useCallback((text: string, cursorPosition: number) => {
@@ -179,7 +167,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       }
     };
 
-    const handleAccountSelect = (account: typeof instagramAccounts[0]) => {
+    const handleAccountSelect = (account: any) => {
       const textarea = internalTextareaRef.current;
       if (!textarea) return;
 
