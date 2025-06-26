@@ -84,6 +84,40 @@ const instagramAccountsSchema = {
   required: ["id", "username", "name", "category", "verified"],
 };
 
+// Instagram lists schema for organizing accounts into groups
+const instagramListsSchema = {
+  version: 0,
+  primaryKey: "id",
+  type: "object",
+  properties: {
+    id: { type: "string", maxLength: 100 },
+    name: { type: "string", maxLength: 200 },
+    description: { type: "string", maxLength: 500 },
+    query: { type: "string", maxLength: 500 }, // Original search query that created this list
+    isManual: { type: "boolean" }, // true for manually created lists, false for search-generated lists
+    color: { type: "string", maxLength: 20 }, // color theme for the list
+    accountCount: { type: "integer", minimum: 0 },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+  },
+  required: ["id", "name", "isManual", "accountCount"],
+};
+
+// Instagram list items schema for many-to-many relationship between lists and accounts
+const instagramListItemsSchema = {
+  version: 0,
+  primaryKey: "id",
+  type: "object",
+  properties: {
+    id: { type: "string", maxLength: 100 },
+    listId: { type: "string", maxLength: 100, ref: "instagram_lists_v0" },
+    accountId: { type: "string", maxLength: 100, ref: "instagram_accounts_v0" },
+    addedAt: { type: "string", format: "date-time" },
+    notes: { type: "string", maxLength: 500 },
+  },
+  required: ["id", "listId", "accountId", "addedAt"],
+};
+
 export const initialize = async () => {
   // Add plugins required for RxDB
   await addRxPlugin(RxDBDevModePlugin);
@@ -106,6 +140,12 @@ export const initialize = async () => {
     },
     instagram_accounts_v0: {
       schema: instagramAccountsSchema,
+    },
+    instagram_lists_v0: {
+      schema: instagramListsSchema,
+    },
+    instagram_list_items_v0: {
+      schema: instagramListItemsSchema,
     },
   });
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/components/ui/use-toast";
 import { 
   Users, 
   MessageSquare, 
@@ -12,9 +13,13 @@ import {
   MapPin, 
   ExternalLink,
   Search,
-  TrendingUp
+  TrendingUp,
+  BookmarkPlus,
+  Folder
 } from "lucide-react";
 import { InstagramAccount } from "@/app/api/instagram-search/types";
+import { useInstagramLists } from "@/lib/hooks/use-instagram-lists";
+import { useRxCollection } from "rxdb-hooks";
 
 interface InstagramSearchInterfaceProps {
   query: string;
@@ -28,10 +33,35 @@ interface Activity {
 }
 
 export default function InstagramSearchInterface({ query }: InstagramSearchInterfaceProps) {
+  const { toast } = useToast();
   const [accounts, setAccounts] = useState<InstagramAccount[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchCompleted, setSearchCompleted] = useState(false);
+  const [listCreated, setListCreated] = useState(false);
+  const [pendingSave, setPendingSave] = useState<InstagramAccount[] | null>(null);
+
+  // RxDB hooks
+  const accountsCollection = useRxCollection("instagram_accounts_v0");
+  
+  // Instagram lists hook
+  const { createList, addAccountsToList } = useInstagramLists();
+
+  // Auto-save when collection becomes available
+  useEffect(() => {
+    console.log('Collection availability check:', {
+      hasCollection: !!accountsCollection,
+      hasPendingSave: !!pendingSave,
+      listCreated,
+      pendingSaveLength: pendingSave?.length
+    });
+    
+    if (accountsCollection && pendingSave && !listCreated) {
+      console.log('Collection now available, saving pending results...');
+      saveAccountsAndCreateList(pendingSave);
+      setPendingSave(null);
+    }
+  }, [accountsCollection, pendingSave, listCreated]);
 
   useEffect(() => {
     if (query && !isSearching && !searchCompleted) {
@@ -90,9 +120,15 @@ export default function InstagramSearchInterface({ query }: InstagramSearchInter
                     setAccounts(data.content.accounts || []);
                   } else if (data.type === 'results') {
                     // Final results
-                    setAccounts(data.content.accounts || []);
+                    const finalAccounts = data.content.accounts || [];
+                    setAccounts(finalAccounts);
                     setSearchCompleted(true);
                     setIsSearching(false);
+                    
+                    // Automatically save accounts and create list
+                    if (finalAccounts.length > 0 && !listCreated && !pendingSave) {
+                      saveAccountsAndCreateList(finalAccounts);
+                    }
                   }
                 }
              } catch (e) {
@@ -104,6 +140,90 @@ export default function InstagramSearchInterface({ query }: InstagramSearchInter
     } catch (error) {
       console.error('Search error:', error);
       setIsSearching(false);
+    }
+  };
+
+  // Function to save accounts and create list
+  const saveAccountsAndCreateList = async (searchResults: InstagramAccount[]) => {
+    try {
+      if (!accountsCollection) {
+        console.log('Collection not ready, queuing for later save...');
+        setPendingSave(searchResults);
+        return;
+      }
+
+      setListCreated(true);
+
+      // Save accounts to database
+      const savedAccountIds: string[] = [];
+      const now = new Date().toISOString();
+      
+      for (const account of searchResults) {
+        try {
+          // Check if account already exists
+          const existingAccount = await accountsCollection.findOne()
+            .where('username').eq(account.username)
+            .exec();
+          
+          if (!existingAccount) {
+            // Create new account
+            const accountId = crypto.randomUUID();
+            await accountsCollection.insert({
+              id: accountId,
+              username: account.username,
+              name: account.name,
+              followers: account.followers.toString(),
+              category: account.category || 'Other',
+              verified: account.verified || false,
+              bio: account.bio || '',
+              profilePictureUrl: account.profilePictureUrl || '',
+              isPrivate: false,
+              followerCount: account.followers || 0,
+              followingCount: account.following || 0,
+              postCount: account.posts || 0,
+              createdAt: now,
+              updatedAt: now,
+            });
+            savedAccountIds.push(accountId);
+          } else {
+            savedAccountIds.push(existingAccount.get('id'));
+          }
+        } catch (error) {
+          console.error(`Error saving account ${account.username}:`, error);
+        }
+      }
+
+      // Create list with search results
+      if (savedAccountIds.length > 0) {
+        const listName = `Search: ${query}`;
+        const listDescription = `Search results for "${query}" - ${savedAccountIds.length} accounts found on ${new Date().toLocaleDateString()}`;
+        
+        const newList = await createList({
+          name: listName,
+          description: listDescription,
+          query: query,
+          isManual: false,
+          color: 'purple',
+        });
+
+        if (newList) {
+          // Add accounts to the list
+          await addAccountsToList(newList.id, savedAccountIds);
+          
+          toast({
+            title: "Search Results Saved!",
+            description: `Created list "${listName}" with ${savedAccountIds.length} accounts. View in Library.`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error saving search results:', error);
+      setListCreated(false); // Reset so manual save can be attempted
+      toast({
+        title: "Auto-save Failed",
+        description: "Use the 'Save to Library' button to save manually",
+        variant: "destructive",
+      });
     }
   };
 
@@ -195,10 +315,37 @@ export default function InstagramSearchInterface({ query }: InstagramSearchInter
             <h2 className="text-xl font-semibold">
               Found {accounts.length} Instagram Account{accounts.length !== 1 ? 's' : ''}
             </h2>
-            <Badge variant="outline" className="flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              AI-Powered Results
-            </Badge>
+            <div className="flex items-center gap-2">
+              {searchCompleted && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.location.href = '/library?tab=lists'}
+                    className="flex items-center gap-2"
+                  >
+                    <Folder className="h-4 w-4" />
+                    View in Library
+                  </Button>
+                  {!listCreated && (
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={() => saveAccountsAndCreateList(accounts)}
+                      className="flex items-center gap-2"
+                      disabled={!!pendingSave}
+                    >
+                      <BookmarkPlus className="h-4 w-4" />
+                      {pendingSave ? 'Saving...' : 'Save to Library'}
+                    </Button>
+                  )}
+                </>
+              )}
+              <Badge variant="outline" className="flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                AI-Powered Results
+              </Badge>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

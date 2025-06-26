@@ -192,6 +192,38 @@ export interface InstagramSearchResult {
   matchScore?: number; // How well it matches the search query
 }
 
+// Instagram list interface for organizing accounts
+export interface InstagramList {
+  id: string;
+  name: string;
+  description?: string;
+  query?: string; // Original search query that created this list
+  isManual: boolean; // true for manually created lists, false for search-generated lists
+  color?: string; // color theme for the list
+  accountCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Instagram list item interface for many-to-many relationship between lists and accounts
+export interface InstagramListItem {
+  id: string;
+  listId: string;
+  accountId: string;
+  addedAt: string;
+  notes?: string;
+}
+
+// Extended interface for list items with populated account data
+export interface InstagramListItemWithAccount extends InstagramListItem {
+  account: InstagramAccount;
+}
+
+// Extended interface for lists with populated accounts
+export interface InstagramListWithAccounts extends InstagramList {
+  accounts: InstagramAccount[];
+}
+
 // Voice cloning interfaces
 export interface VoiceClone {
   id: string;
