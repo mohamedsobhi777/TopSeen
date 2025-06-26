@@ -6,10 +6,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
-  Mic,
   ArrowUp,
-  Plus,
-  FileText,
   BrainCircuit,
   Sparkles,
   Users,
@@ -25,8 +22,7 @@ export default function HomePage() {
   const [searchEnabled, setSearchEnabled] = useState(false);
   const [deepResearchEnabled, setDeepResearchEnabled] = useState(false);
   const [reasonEnabled, setReasonEnabled] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
-  const [showUploadAnimation, setShowUploadAnimation] = useState(false);
+
   const [activeCommandCategory, setActiveCommandCategory] = useState<
     string | null
   >(null);
@@ -58,16 +54,7 @@ export default function HomePage() {
     ],
   };
 
-  const handleUploadFile = () => {
-    setShowUploadAnimation(true);
 
-    // Simulate file upload with timeout
-    setTimeout(() => {
-      const newFile = `Influencer_List.csv`;
-      setUploadedFiles((prev) => [...prev, newFile]);
-      setShowUploadAnimation(false);
-    }, 1500);
-  };
 
   const handleCommandSelect = (command: string) => {
     setInputValue(command);
@@ -209,45 +196,7 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* Uploaded files */}
-              {uploadedFiles.length > 0 && (
-                <div className="px-4 pb-3">
-                  <div className="flex flex-wrap gap-2">
-                    {uploadedFiles.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 bg-gray-50 py-1 px-2 rounded-md border border-gray-200"
-                      >
-                        <FileText className="w-3 h-3 text-purple-600" />
-                        <span className="text-xs text-gray-700">{file}</span>
-                        <button
-                          onClick={() =>
-                            setUploadedFiles((prev) =>
-                              prev.filter((_, i) => i !== index)
-                            )
-                          }
-                          className="text-gray-400 hover:text-gray-600"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+
 
               {/* Search, Deep Research, Reason functions and actions */}
               <div className="px-4 py-3 flex items-center justify-between">
@@ -295,9 +244,6 @@ export default function HomePage() {
                   </button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                    <Mic className="w-5 h-5" />
-                  </button>
                   <button
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim()}
@@ -312,52 +258,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Upload files */}
-              <div className="px-4 py-2 border-t border-gray-100">
-                <button
-                  onClick={handleUploadFile}
-                  className="flex items-center gap-2 text-gray-600 text-sm hover:text-gray-900 transition-colors"
-                >
-                  {showUploadAnimation ? (
-                    <motion.div
-                      className="flex space-x-1"
-                      initial="hidden"
-                      animate="visible"
-                      variants={{
-                        hidden: {},
-                        visible: {
-                          transition: {
-                            staggerChildren: 0.1,
-                          },
-                        },
-                      }}
-                    >
-                      {[...Array(3)].map((_, i) => (
-                        <motion.div
-                          key={i}
-                          className="w-1.5 h-1.5 bg-purple-600 rounded-full"
-                          variants={{
-                            hidden: { opacity: 0, y: 5 },
-                            visible: {
-                              opacity: 1,
-                              y: 0,
-                              transition: {
-                                duration: 0.4,
-                                repeat: Infinity,
-                                repeatType: "mirror",
-                                delay: i * 0.1,
-                              },
-                            },
-                          }}
-                        />
-                      ))}
-                    </motion.div>
-                  ) : (
-                    <Plus className="w-4 h-4" />
-                  )}
-                  <span>Upload Account Lists</span>
-                </button>
-              </div>
+
             </div>
 
                         {/* Command categories */}
