@@ -107,11 +107,8 @@ function SearchResultCard({ result }: { result: any }) {
   const router = useRouter();
 
   const handleSendMessage = () => {
-    if (result.type === "user") {
-      router.push(`/chat/${result.id}`);
-    }
-    // For campaigns, you might want to redirect to a different chat or contact page
-    // For now, we'll just handle user messaging
+    // Route to the generic chat page for AI assistance with message writing
+    router.push(`/chat`);
   };
 
   if (result.type === "user") {

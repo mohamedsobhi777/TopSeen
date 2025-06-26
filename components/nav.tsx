@@ -12,6 +12,7 @@ import {
   UserIcon,
   MicIcon,
   HelpCircleIcon,
+  Bot,
 } from "lucide-react";
 import { extractAndDecodeTripName } from "@/lib/utils";
 import { useRxData } from "rxdb-hooks";
@@ -54,20 +55,20 @@ export function MobileNav({
               className="group text-lg font-semibold mr-auto justify-center flex gap-2"
             >
               <div className="flex items-center gap-2 p-4 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-                <svg 
-                  width="32" 
-                  height="32" 
-                  viewBox="0 0 200 200" 
-                  fill="none" 
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 200 200"
+                  fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   className="w-8 h-8"
-                > 
-                  <path 
-                    fillRule="evenodd" 
-                    clipRule="evenodd" 
-                    d="M99.9994 153.877C141.147 153.877 176.851 127.54 194.627 111.673C201.789 105.28 201.789 94.597 194.627 88.204C176.851 72.3371 141.147 46 99.9994 46C58.8516 46 23.1479 72.3371 5.37163 88.2041C-1.79055 94.597 -1.79054 105.28 5.37164 111.673C23.1479 127.54 58.8516 153.877 99.9994 153.877ZM99.9994 137.57C120.783 137.57 137.631 120.722 137.631 99.9383C137.631 79.1551 120.783 62.3069 99.9994 62.3069C79.2161 62.3069 62.368 79.1551 62.368 99.9383C62.368 120.722 79.2161 137.57 99.9994 137.57Z" 
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M99.9994 153.877C141.147 153.877 176.851 127.54 194.627 111.673C201.789 105.28 201.789 94.597 194.627 88.204C176.851 72.3371 141.147 46 99.9994 46C58.8516 46 23.1479 72.3371 5.37163 88.2041C-1.79055 94.597 -1.79054 105.28 5.37164 111.673C23.1479 127.54 58.8516 153.877 99.9994 153.877ZM99.9994 137.57C120.783 137.57 137.631 120.722 137.631 99.9383C137.631 79.1551 120.783 62.3069 99.9994 62.3069C79.2161 62.3069 62.368 79.1551 62.368 99.9383C62.368 120.722 79.2161 137.57 99.9994 137.57Z"
                     fill="white"
-                  /> 
+                  />
                 </svg>
                 <span className="font-bold text-2xl">TopSeen</span>
               </div>
@@ -77,8 +78,8 @@ export function MobileNav({
           <div className="h-[calc(100vh-250px)] justify-between flex flex-col  items-start  w-full  pr-12">
             <NavCampaignHistory />
             <div className="flex flex-col gap-4 pl-6">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={onTourTrigger}
                 className="justify-start gap-2 text-muted-foreground hover:text-foreground"
@@ -97,7 +98,7 @@ export function MobileNav({
 
 export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
   const pathname = usePathname();
-  
+
   const isActive = (path: string) => {
     if (path === "/") {
       return pathname === "/";
@@ -112,33 +113,32 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
           href="/"
           className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-lg font-semibold text-white md:h-8 md:w-8 md:text-base"
         >
-          <svg 
-            width="16" 
-            height="16" 
-            viewBox="0 0 200 200" 
-            fill="none" 
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 200 200"
+            fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className="h-4 w-4 transition-all group-hover:scale-110"
-          > 
-            <path 
-              fillRule="evenodd" 
-              clipRule="evenodd" 
-              d="M99.9994 153.877C141.147 153.877 176.851 127.54 194.627 111.673C201.789 105.28 201.789 94.597 194.627 88.204C176.851 72.3371 141.147 46 99.9994 46C58.8516 46 23.1479 72.3371 5.37163 88.2041C-1.79055 94.597 -1.79054 105.28 5.37164 111.673C23.1479 127.54 58.8516 153.877 99.9994 153.877ZM99.9994 137.57C120.783 137.57 137.631 120.722 137.631 99.9383C137.631 79.1551 120.783 62.3069 99.9994 62.3069C79.2161 62.3069 62.368 79.1551 62.368 99.9383C62.368 120.722 79.2161 137.57 99.9994 137.57Z" 
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M99.9994 153.877C141.147 153.877 176.851 127.54 194.627 111.673C201.789 105.28 201.789 94.597 194.627 88.204C176.851 72.3371 141.147 46 99.9994 46C58.8516 46 23.1479 72.3371 5.37163 88.2041C-1.79055 94.597 -1.79054 105.28 5.37164 111.673C23.1479 127.54 58.8516 153.877 99.9994 153.877ZM99.9994 137.57C120.783 137.57 137.631 120.722 137.631 99.9383C137.631 79.1551 120.783 62.3069 99.9994 62.3069C79.2161 62.3069 62.368 79.1551 62.368 99.9383C62.368 120.722 79.2161 137.57 99.9994 137.57Z"
               fill="white"
-            /> 
+            />
           </svg>
           <span className="sr-only">TopSeen</span>
         </Link>
-        
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
               href="/"
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                isActive("/") 
-                  ? "bg-accent text-accent-foreground" 
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/")
+                  ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               <HomeIcon className="h-5 w-5" />
               <span className="sr-only">Dashboard</span>
@@ -151,11 +151,10 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
           <TooltipTrigger asChild>
             <Link
               href="/results"
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                isActive("/results") 
-                  ? "bg-accent text-accent-foreground" 
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/results")
+                  ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               <SearchIcon className="h-5 w-5" />
               <span className="sr-only">Search</span>
@@ -164,15 +163,31 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
           <TooltipContent side="right">Search</TooltipContent>
         </Tooltip>
 
+        {/* <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              href="/chat"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
+                isActive("/chat") 
+                  ? "bg-accent text-accent-foreground" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Bot className="h-5 w-5" />
+              <span className="sr-only">AI Chat</span>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">AI Chat Assistant</TooltipContent>
+        </Tooltip> */}
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
               href="/voice"
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                isActive("/voice") 
-                  ? "bg-accent text-accent-foreground" 
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/voice")
+                  ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               <MicIcon className="h-5 w-5" />
               <span className="sr-only">Voice</span>
@@ -180,16 +195,15 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
           </TooltipTrigger>
           <TooltipContent side="right">Voice Cloning</TooltipContent>
         </Tooltip>
-        
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
               href="/library"
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                isActive("/library") 
-                  ? "bg-accent text-accent-foreground" 
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/library")
+                  ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               <ClipboardListIcon className="h-5 w-5" />
               <span className="sr-only">Library</span>
@@ -201,12 +215,27 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              href="/account"
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${
-                isActive("/account") 
-                  ? "bg-accent text-accent-foreground" 
+              href="/background-agents"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/background-agents")
+                  ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
+            >
+              <Bot className="h-5 w-5" />
+              <span className="sr-only">Background Agents</span>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">Background Agents</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              href="/account"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/account")
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               <UserIcon className="h-5 w-5" />
               <span className="sr-only">Account</span>
@@ -215,7 +244,7 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
           <TooltipContent side="right">Account</TooltipContent>
         </Tooltip>
       </nav>
-      
+
       <nav className="mt-auto flex flex-col items-center gap-4 px-2 pb-4">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -264,29 +293,26 @@ function NavCampaignHistory() {
         <div className="pl-3 flex flex-col space-y-3">
           <Link
             href="/"
-            className={`flex gap-2 items-center w-full rounded-md py-2 px-2.5 transition-colors ${
-              isActive("/")
+            className={`flex gap-2 items-center w-full rounded-md py-2 px-2.5 transition-colors ${isActive("/")
                 ? "bg-accent text-accent-foreground"
                 : "bg-neutral-100 dark:bg-neutral-800 text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <HomeIcon /> All campaigns
           </Link>
           {campaigns_v0.map((campaign) => (
             <div
               key={campaign.tripId}
-              className={`flex justify-between items-center w-full rounded-md py-2 px-2.5 ${
-                isActive(`/${campaign.tripId}`)
+              className={`flex justify-between items-center w-full rounded-md py-2 px-2.5 ${isActive(`/${campaign.tripId}`)
                   ? "bg-accent text-accent-foreground"
                   : "bg-neutral-100 dark:bg-neutral-800"
-              }`}
+                }`}
             >
               <Link
-                className={`flex-1 transition-colors ${
-                  isActive(`/${campaign.tripId}`)
+                className={`flex-1 transition-colors ${isActive(`/${campaign.tripId}`)
                     ? "text-accent-foreground"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
                 href={`/${campaign.tripId}`}
               >
                 <div className="flex gap-2 items-center">
