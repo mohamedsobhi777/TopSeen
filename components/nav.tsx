@@ -150,7 +150,7 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              href="/results"
+              href="/search"
               className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/results")
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:text-foreground"

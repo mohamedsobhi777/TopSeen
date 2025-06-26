@@ -47,6 +47,7 @@
     "dedent": "^1.5.1",
     "embla-carousel": "^8.0.2",
     "embla-carousel-react": "^8.0.2",
+    "exa-js": "^1.8.17",
     "framer-motion": "^12.19.1",
     "jotai": "^2.7.2",
     "llm-message-utils": "^0.1.1",

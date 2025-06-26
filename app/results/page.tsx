@@ -3,6 +3,7 @@
 import { parseAsString, useQueryState } from "nuqs";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import InstagramSearchInterface from "@/components/ui/instagram-search/InstagramSearchInterface";
 import {
   Search,
   User,
@@ -285,26 +286,27 @@ export default function SearchResultsPage() {
             </div>
 
             {/* Results */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredResults.length > 0 ? (
-                filteredResults.map((result) => (
-                  <SearchResultCard key={result.id} result={result} />
-                ))
-              ) : (
-                <Card className="col-span-full">
-                  <CardContent className="p-12 text-center">
-                    <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No results found</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {query 
-                        ? `We couldn't find any results for "${query}". Try adjusting your search terms.`
-                        : "Start typing to search for users, campaigns, and content."
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+            {query ? (
+              <InstagramSearchInterface query={query} />
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredResults.length > 0 ? (
+                  filteredResults.map((result) => (
+                    <SearchResultCard key={result.id} result={result} />
+                  ))
+                ) : (
+                  <Card className="col-span-full">
+                    <CardContent className="p-12 text-center">
+                      <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No results found</h3>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        Start typing to search for Instagram accounts using natural language.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
           </div>
         </main>
       </div>
