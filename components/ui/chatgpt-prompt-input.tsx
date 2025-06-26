@@ -36,8 +36,24 @@ const LightbulbIcon = (props: React.SVGProps<SVGSVGElement>) => ( <svg viewBox="
 // NEW: MicIcon
 const MicIcon = (props: React.SVGProps<SVGSVGElement>) => ( <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}> <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path> <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path> <line x1="12" y1="19" x2="12" y2="23"></line> </svg> );
 
+// Instagram Account Icon
+const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => ( <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}> <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect> <path d="m16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path> <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line> </svg> );
 
 const moodsList = [ { id: 'professional', name: 'Professional tone', shortName: 'Professional', icon: PencilIcon }, { id: 'friendly', name: 'Friendly and casual', shortName: 'Friendly', icon: LightbulbIcon }, { id: 'flirty', name: 'Flirty and playful', shortName: 'Flirty', icon: PaintBrushIcon }, { id: 'nerdy', name: 'Nerdy and technical', shortName: 'Nerdy', icon: TelescopeIcon }, { id: 'witty', name: 'Witty and humorous', shortName: 'Witty', icon: GlobeIcon }, ];
+
+// Hardcoded Instagram accounts for autocomplete
+const instagramAccounts = [
+  { id: '1', username: 'fashionista_emily', name: 'Emily Johnson', followers: '125K', category: 'Fashion', verified: true },
+  { id: '2', username: 'tech_guru_mike', name: 'Mike Chen', followers: '89K', category: 'Technology', verified: false },
+  { id: '3', username: 'lifestyle_sarah', name: 'Sarah Wilson', followers: '67K', category: 'Lifestyle', verified: true },
+  { id: '4', username: 'foodie_alex', name: 'Alex Rodriguez', followers: '234K', category: 'Food', verified: true },
+  { id: '5', username: 'travel_nomad', name: 'Jordan Kim', followers: '156K', category: 'Travel', verified: false },
+  { id: '6', username: 'fitness_motivation', name: 'Maya Patel', followers: '98K', category: 'Fitness', verified: true },
+  { id: '7', username: 'art_creative', name: 'Sam Thompson', followers: '45K', category: 'Art', verified: false },
+  { id: '8', username: 'music_beats', name: 'Chris Williams', followers: '78K', category: 'Music', verified: true },
+  { id: '9', username: 'gaming_pro', name: 'Taylor Davis', followers: '189K', category: 'Gaming', verified: false },
+  { id: '10', username: 'beauty_tips', name: 'Zoe Martinez', followers: '112K', category: 'Beauty', verified: true },
+];
 
 // --- The Final, Self-Contained PromptBox Component ---
 interface PromptBoxProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onSubmit' | 'value' | 'onChange'> {
@@ -50,23 +66,73 @@ interface PromptBoxProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaE
 
 export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
   ({ className, onSubmit, onMoodChange, disabled, value: controlledValue, onChange, ...props }, ref) => {
-    // ... all state and handlers are unchanged ...
     const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const autocompleteRef = React.useRef<HTMLDivElement>(null);
     const [internalValue, setInternalValue] = React.useState("");
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
     const [selectedMood, setSelectedMood] = React.useState<string | null>(null);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isImageDialogOpen, setIsImageDialogOpen] = React.useState(false);
     
+    // Autocomplete state
+    const [autocompleteState, setAutocompleteState] = React.useState({
+      isOpen: false,
+      query: '',
+      selectedIndex: 0,
+      triggerPosition: 0,
+    });
+    
     // Use controlled value if provided, otherwise use internal state
     const value = controlledValue !== undefined ? controlledValue : internalValue;
     
     React.useImperativeHandle(ref, () => internalTextareaRef.current!, []);
-    React.useLayoutEffect(() => { const textarea = internalTextareaRef.current; if (textarea) { textarea.style.height = "auto"; const newHeight = Math.min(textarea.scrollHeight, 200); textarea.style.height = `${newHeight}px`; } }, [value]);
     
+    React.useLayoutEffect(() => { 
+      const textarea = internalTextareaRef.current; 
+      if (textarea) { 
+        textarea.style.height = "auto"; 
+        const newHeight = Math.min(textarea.scrollHeight, 200); 
+        textarea.style.height = `${newHeight}px`; 
+      } 
+    }, [value]);
+
+    // Filter Instagram accounts based on query
+    const filteredAccounts = React.useMemo(() => {
+      if (!autocompleteState.query) return instagramAccounts.slice(0, 5);
+      
+      return instagramAccounts.filter(account => 
+        account.username.toLowerCase().includes(autocompleteState.query.toLowerCase()) ||
+        account.name.toLowerCase().includes(autocompleteState.query.toLowerCase())
+      ).slice(0, 5);
+    }, [autocompleteState.query]);
+
+    // Find mention trigger in text
+    const findMentionTrigger = React.useCallback((text: string, cursorPosition: number) => {
+      // Look backwards from cursor position to find '@' character
+      let atPosition = -1;
+      for (let i = cursorPosition - 1; i >= 0; i--) {
+        if (text[i] === '@') {
+          atPosition = i;
+          break;
+        }
+        if (text[i] === ' ' || text[i] === '\n') {
+          break; // Stop if we hit a space or newline
+        }
+      }
+      
+      if (atPosition !== -1) {
+        const query = text.slice(atPosition + 1, cursorPosition);
+        return { position: atPosition, query };
+      }
+      
+      return null;
+    }, []);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => { 
       const newValue = e.target.value;
+      const cursorPosition = e.target.selectionStart;
+      
       if (controlledValue !== undefined) {
         // Controlled mode
         if (onChange) onChange(newValue);
@@ -74,7 +140,86 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
         // Uncontrolled mode
         setInternalValue(newValue);
       }
+
+      // Check for mention trigger
+      const mentionTrigger = findMentionTrigger(newValue, cursorPosition);
+      
+      if (mentionTrigger) {
+        setAutocompleteState({
+          isOpen: true,
+          query: mentionTrigger.query,
+          selectedIndex: 0,
+          triggerPosition: mentionTrigger.position,
+        });
+      } else {
+        setAutocompleteState(prev => ({ ...prev, isOpen: false }));
+      }
     };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (autocompleteState.isOpen && filteredAccounts.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setAutocompleteState(prev => ({
+            ...prev,
+            selectedIndex: Math.min(prev.selectedIndex + 1, filteredAccounts.length - 1)
+          }));
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setAutocompleteState(prev => ({
+            ...prev,
+            selectedIndex: Math.max(prev.selectedIndex - 1, 0)
+          }));
+        } else if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleAccountSelect(filteredAccounts[autocompleteState.selectedIndex]);
+        } else if (e.key === 'Escape') {
+          setAutocompleteState(prev => ({ ...prev, isOpen: false }));
+        }
+      }
+    };
+
+    const handleAccountSelect = (account: typeof instagramAccounts[0]) => {
+      const textarea = internalTextareaRef.current;
+      if (!textarea) return;
+
+      const currentValue = value;
+      const beforeMention = currentValue.slice(0, autocompleteState.triggerPosition);
+      const afterMention = currentValue.slice(textarea.selectionStart);
+      const newValue = beforeMention + `@${account.username} ` + afterMention;
+      
+      if (controlledValue !== undefined) {
+        // Controlled mode
+        if (onChange) onChange(newValue);
+      } else {
+        // Uncontrolled mode
+        setInternalValue(newValue);
+      }
+
+      // Close autocomplete
+      setAutocompleteState(prev => ({ ...prev, isOpen: false }));
+
+      // Set cursor position after the inserted mention
+      setTimeout(() => {
+        const newCursorPosition = beforeMention.length + account.username.length + 2; // +2 for @ and space
+        textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+        textarea.focus();
+      }, 0);
+    };
+
+    // Click outside to close autocomplete
+    React.useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (autocompleteRef.current && !autocompleteRef.current.contains(event.target as Node)) {
+          setAutocompleteState(prev => ({ ...prev, isOpen: false }));
+        }
+      };
+
+      if (autocompleteState.isOpen) {
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+      }
+    }, [autocompleteState.isOpen]);
     
     const handleSubmit = (e: React.FormEvent) => { 
       e.preventDefault(); 
@@ -90,7 +235,11 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       } 
     };
     
-    const handleMoodChange = (moodId: string) => { setSelectedMood(moodId); if (onMoodChange) onMoodChange(moodId); };
+    const handleMoodChange = (moodId: string) => { 
+      setSelectedMood(moodId); 
+      if (onMoodChange) onMoodChange(moodId); 
+    };
+    
     const handlePlusClick = () => { fileInputRef.current?.click(); };
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (file && file.type.startsWith("image/")) { const reader = new FileReader(); reader.onloadend = () => { setImagePreview(reader.result as string); }; reader.readAsDataURL(file); } event.target.value = ""; };
     const handleRemoveImage = (e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); setImagePreview(null); if(fileInputRef.current) { fileInputRef.current.value = ""; } };
@@ -99,12 +248,69 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
     const ActiveMoodIcon = activeMood?.icon;
 
     return (
-      <form onSubmit={handleSubmit} className={cn("flex flex-col rounded-[28px] p-2 shadow-sm transition-colors bg-white border dark:bg-[#303030] dark:border-transparent cursor-text", className)}>
+      <form onSubmit={handleSubmit} className={cn("relative flex flex-col rounded-[28px] p-2 shadow-sm transition-colors bg-white border dark:bg-[#303030] dark:border-transparent cursor-text", className)}>
         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*"/>
         
         {imagePreview && ( <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}> <div className="relative mb-1 w-fit rounded-[1rem] px-1 pt-1"> <button type="button" className="transition-transform" onClick={() => setIsImageDialogOpen(true)}> <img src={imagePreview} alt="Image preview" className="h-14.5 w-14.5 rounded-[1rem]" /> </button> <button onClick={handleRemoveImage} className="absolute right-2 top-2 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-white/50 dark:bg-[#303030] text-black dark:text-white transition-colors hover:bg-accent dark:hover:bg-[#515151]" aria-label="Remove image"> <XIcon className="h-4 w-4" /> </button> </div> <DialogContent> <img src={imagePreview} alt="Full size preview" className="w-full max-h-[95vh] object-contain rounded-[24px]" /> </DialogContent> </Dialog> )}
         
-        <textarea ref={internalTextareaRef} rows={1} value={value} onChange={handleInputChange} placeholder="Message..." className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-300 focus:ring-0 focus-visible:outline-none min-h-12" disabled={disabled} {...props} />
+        <textarea 
+          ref={internalTextareaRef} 
+          rows={1} 
+          value={value} 
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Message..." 
+          className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-300 focus:ring-0 focus-visible:outline-none min-h-12" 
+          disabled={disabled} 
+          {...props} 
+        />
+
+        {/* Instagram Accounts Autocomplete Dropdown */}
+        {autocompleteState.isOpen && filteredAccounts.length > 0 && (
+          <div 
+            ref={autocompleteRef}
+            className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-[#303030] border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto z-50"
+          >
+            {filteredAccounts.map((account, index) => (
+              <button
+                key={account.id}
+                type="button"
+                onClick={() => handleAccountSelect(account)}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 dark:hover:bg-[#404040] transition-colors",
+                  index === autocompleteState.selectedIndex && "bg-gray-50 dark:bg-[#404040]"
+                )}
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                    <InstagramIcon className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-900 dark:text-white truncate">
+                      @{account.username}
+                    </span>
+                    {account.verified && (
+                      <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="truncate">{account.name}</span>
+                    <span>•</span>
+                    <span>{account.followers}</span>
+                    <span>•</span>
+                    <span className="truncate">{account.category}</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
         
         <div className="mt-0.5 p-1 pt-0">
           <TooltipProvider delayDuration={100}>
@@ -141,7 +347,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                 </>
               )}
 
-              {/* MODIFIED: Right-aligned buttons container */}
+              {/* Right-aligned buttons container */}
               <div className="ml-auto flex items-center gap-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
