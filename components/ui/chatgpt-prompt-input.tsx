@@ -50,10 +50,11 @@ interface PromptBoxProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaE
   disabled?: boolean;
   value?: string;
   onChange?: (value: string) => void;
+  additionalActions?: React.ReactNode;
 }
 
 export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
-  ({ className, onSubmit, onMoodChange, disabled, value: controlledValue, onChange, ...props }, ref) => {
+  ({ className, onSubmit, onMoodChange, disabled, value: controlledValue, onChange, additionalActions, ...props }, ref) => {
     const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const autocompleteRef = React.useRef<HTMLDivElement>(null);
@@ -163,6 +164,14 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
           handleAccountSelect(filteredAccounts[autocompleteState.selectedIndex]);
         } else if (e.key === 'Escape') {
           setAutocompleteState(prev => ({ ...prev, isOpen: false }));
+        }
+      } else {
+        // Handle Enter key when autocomplete is not open
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (value.trim() && onSubmit && !disabled) {
+            handleSubmit(e);
+          }
         }
       }
     };
@@ -337,6 +346,8 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
 
               {/* Right-aligned buttons container */}
               <div className="ml-auto flex items-center gap-2">
+                {additionalActions}
+                
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button type="button" className="flex h-6 w-6 items-center justify-center rounded-full text-foreground dark:text-white transition-colors hover:bg-accent dark:hover:bg-[#515151] focus-visible:outline-none">

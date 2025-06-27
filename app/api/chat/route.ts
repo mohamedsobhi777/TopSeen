@@ -1,3 +1,4 @@
+import { parseAsString } from "nuqs";
 import { anthropic } from "@ai-sdk/anthropic";
 import { gateway } from "@vercel/ai-sdk-gateway";
 import { convertToModelMessages, experimental_createMCPClient, streamText } from "ai";
@@ -16,28 +17,15 @@ export async function POST(req: Request) {
         console.log("Messages received:", messages?.length || 0);
 
         // Fetch user credentials
-        let instagramUsername = "";
-        let instagramPassword = "";
-        
-        try {
-            const credentialsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/user-credentials`);
-            if (credentialsResponse.ok) {
-                const credentials = await credentialsResponse.json();
-                instagramUsername = credentials.instagramUsername;
-                instagramPassword = credentials.instagramPassword;
-            }
-        } catch (error) {
-            console.error("Failed to fetch user credentials, falling back to env vars:", error);
-            instagramUsername = process.env.INSTAGRAM_USERNAME || "";
-            instagramPassword = process.env.INSTAGRAM_PASSWORD || "";
-        }
+        const instagramUsername = process.env.INSTAGRAM_USERNAME || "";
+        const instagramPassword = process.env.INSTAGRAM_PASSWORD || "";
 
         // Validate that we have credentials
         if (!instagramUsername || !instagramPassword) {
-            return new Response(
-                JSON.stringify({ error: "Instagram credentials not configured. Please add your credentials in Account Settings." }), 
-                { status: 400, headers: { "Content-Type": "application/json" } }
-            );
+            return new Response(JSON.stringify({ error: "Instagram credentials not configured. Please add your credentials in Account Settings." }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
         }
 
         const mcpClient = await experimental_createMCPClient({
@@ -54,7 +42,16 @@ export async function POST(req: Request) {
                     "--password",
                     instagramPassword,
                 ],
+                env: {
+                    RECEIVER_USERNAME: "mohamed.sobhy.2002",
+                    INSTAGRAM_USERNAME: "babai.official.ai",
+                    INSTAGRAM_PASSWORD: "ig_PapAi_Q2659Z"
+                },
+                // stderr: "ignore",
             }),
+            // onUncaughtError: (error) => {
+            //     console.log("Uncaught error:", JSON.stringify(error, null, 2));
+            // },
         });
 
         const mcp_tools = await mcpClient.tools();
@@ -74,45 +71,77 @@ export async function POST(req: Request) {
             system: `You are TopSeen AI, an intelligent assistant for Instagram DM automation and influencer outreach. Your primary role is to help users discover, connect with, and manage relationships with Instagram influencers, creators, and businesses.
 
 You are having a conversation with the following user: ${process.env.RECEIVER_USERNAME}
-        
-Your capabilities include:
-1. **Instagram Account Discovery**: Help users find relevant Instagram accounts based on their criteria (niche, follower count, engagement, location, etc.)
-2. **Message Crafting**: Create personalized, effective DM messages for different purposes:
-   - Initial outreach and introductions
-   - Collaboration proposals
-   - Follow-up messages
-   - Thank you notes
-   - Campaign invitations
-3. **Relationship Management**: Provide insights on managing influencer relationships and campaign tracking
-4. **Automation Strategy**: Suggest best practices for Instagram DM automation while maintaining authenticity
 
-Mood/Tone Options:
-- **Professional**: Formal, business-appropriate, respectful
-- **Friendly**: Warm, casual, approachable
-- **Flirty**: Playful, charming, subtly romantic (use appropriately)
-- **Nerdy**: Technical, detailed, enthusiastic about expertise
-- **Witty**: Humorous, clever, entertaining
+## Available Instagram Automation Tools
 
-Guidelines:
-- Always prioritize authentic, value-driven communication over pushy sales tactics
-- Respect Instagram's terms of service and avoid spam-like behavior
-- Suggest personalization based on the recipient's content and interests
-- Provide alternative message options and A/B testing suggestions
-- Consider timing, frequency, and relationship building in your recommendations
-- Help users build genuine connections that lead to long-term partnerships
+### 📨 Direct Messaging
+- **send_message**: Send text messages to Instagram users by username
+- **send_photo_message**: Send photos via DM with optional captions
+- **send_video_message**: Send videos via DM to users
 
-When users ask about sending messages:
-1. Craft the message based on their requirements
-2. Explain why the approach will be effective
-3. Provide alternative options if relevant
-4. Suggest the best timing and follow-up strategy
+### 💬 Chat & Thread Management
+- **list_chats**: Retrieve DM threads with filtering (flagged, unread) and message limits
+- **list_messages**: Get messages from specific threads with customizable amounts
+- **mark_message_seen**: Mark messages as read in conversations
+- **list_pending_chats**: View pending message requests in your inbox
+- **search_threads**: Search through DM threads by username or keywords
+- **get_thread_by_participants**: Find conversations with specific users
+- **get_thread_details**: Get comprehensive thread information and message history
 
-Example interactions:
-- "Draft a friendly message to @fashionista_emily about collaboration"
-- "Create a professional outreach message for tech influencers" 
-- "Help me follow up with @lifestyle_sarah about our previous conversation"
+### 👤 User Discovery & Information
+- **search_users**: Find Instagram users by name or username with detailed profiles
+- **get_user_info**: Get comprehensive user data (bio, follower count, verification status, etc.)
+- **get_user_id_from_username** / **get_username_from_user_id**: Convert between usernames and IDs
+- **check_user_online_status**: Check if users are currently online
 
-Always provide actionable, specific advice for Instagram outreach and relationship building.`,
+### 📱 Social Intelligence
+- **get_user_stories**: Access user's current Instagram stories
+- **get_user_posts**: Retrieve recent posts with engagement metrics
+- **get_user_followers**: Get follower lists with profile information
+- **get_user_following**: See who users are following
+- **like_media**: Like or unlike posts from URLs
+
+## Core Capabilities
+
+1. **Intelligent User Research**: Use search and profile tools to find and analyze potential collaborators
+2. **Conversation Management**: Monitor, organize, and respond to DM threads efficiently
+3. **Personalized Outreach**: Craft messages based on user's content, stories, and profile information
+4. **Relationship Tracking**: Keep track of ongoing conversations and follow-ups
+5. **Content Intelligence**: Analyze posts and stories to create relevant, contextual messages
+
+## Message Crafting Guidelines
+
+**Tone Options:**
+- **Professional**: Business-focused, respectful, formal
+- **Friendly**: Warm, approachable, conversational
+- **Creative**: Artistic, unique, inspiring
+- **Data-Driven**: Metrics-focused, analytical, results-oriented
+
+**Best Practices:**
+- Research users before messaging (check posts, stories, bio, follower count)
+- Personalize based on recent content and interests
+- Provide clear value propositions
+- Respect Instagram's community guidelines
+- Build authentic relationships over transactional interactions
+- Use appropriate timing based on user activity and online status
+
+## Workflow Examples
+
+**Discovery → Research → Outreach:**
+1. Search for users in target niche
+2. Analyze their profile, posts, and engagement
+3. Check if they're online for optimal timing
+4. Craft personalized message based on research
+5. Send message and track in conversation threads
+6. Follow up appropriately based on response patterns
+
+**Conversation Management:**
+1. Review pending message requests
+2. Check existing threads for new messages
+3. Mark important messages as seen
+4. Organize follow-ups based on conversation status
+
+Always prioritize building genuine connections and providing real value to potential collaborators. Use the available tools strategically to create meaningful, personalized outreach campaigns.`,
             // messages: convertToModelMessages(messages).map((msg, idx, arr) => {
             //     if (idx === arr.length - 1) {
             //         return {
@@ -126,14 +155,24 @@ Always provide actionable, specific advice for Instagram outreach and relationsh
             // }),
             messages: convertToModelMessages(messages),
             tools: mcp_tools,
+            onStepFinish: async (step) => {
+                console.log("Step finished:", JSON.stringify(step, null, 2));
+            },
             onFinish: async () => {
                 await mcpClient.close();
             },
-            onError: async (error) => {
-                console.error("Error:", error);
-                await mcpClient.close();
-            }
+            // onError: async (error) => {
+            //     console.error("Error-1:", JSON.stringify(error, null, 2));
+            //     await mcpClient.close();
+            // }
         });
+
+        console.log("Result:", JSON.stringify(await result, null, 2));
+
+        // // typed tool results for tools with execute method:
+        // for (const toolResult of await result.toolResults) {
+        //     console.log("Tool result:", JSON.stringify(toolResult, null, 2));
+        // }
 
         return result.toUIMessageStreamResponse();
     } catch (error) {

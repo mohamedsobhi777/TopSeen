@@ -58,6 +58,7 @@ export default function ChatPage() {
       console.log('Tool call:', toolCall);
     },
     resume: false,
+    maxSteps: 5,
     onError: (error) => {
       console.error('Chat error:', error);
     },
@@ -191,6 +192,60 @@ export default function ChatPage() {
                                         &ldquo;{messageContent}&rdquo;
                                       </div>
                                     )}
+                                  </div>
+                                );
+                              } else if (part.type?.startsWith('tool-')) {
+                                // Handle new tool call format: tool-{toolName}
+                                const toolName = part.type.replace('tool-', '');
+                                const isCompleted = part.state === "result" || part.state === "done";
+                                const isLoading = part.state === "input-streaming" || part.state === "partial";
+                                
+                                if (toolName === "send_message") {
+                                  const messageContent = part.args?.message || part.args?.content;
+                                  return (
+                                    <div key={index} className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-3 mt-2">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Send className="h-4 w-4 text-green-600" />
+                                        <span className="text-xs font-medium text-green-900 dark:text-green-100">
+                                          Message Draft
+                                        </span>
+                                      </div>
+                                      {messageContent && (
+                                        <div className="text-xs text-green-700 dark:text-green-300 bg-white dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded p-2">
+                                          &ldquo;{messageContent}&rdquo;
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                }
+                                
+                                // Generic tool UI for other tools
+                                return (
+                                  <div key={index} className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg p-3 mt-2">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Bot className="h-4 w-4 text-purple-600" />
+                                      <span className="text-xs font-medium text-purple-900 dark:text-purple-100">
+                                        {toolName.charAt(0).toUpperCase() + toolName.slice(1).replace('_', ' ')}
+                                      </span>
+                                      {isCompleted && (
+                                        <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
+                                          Completed
+                                        </span>
+                                      )}
+                                      {isLoading && (
+                                        <span className="text-xs bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                                          Loading...
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-purple-700 dark:text-purple-300">
+                                      {isCompleted 
+                                        ? "Tool execution completed"
+                                        : isLoading
+                                        ? "Executing tool..."
+                                        : "Tool ready"
+                                      }
+                                    </div>
                                   </div>
                                 );
                               } else if (part.type === "tool-invocation") {
@@ -342,46 +397,22 @@ export default function ChatPage() {
                   className="rounded-[8px]"
                   onSubmit={handleAiSubmit}
                   onMoodChange={setSelectedMood}
+                  additionalActions={
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAiMessages([]);
+                        setSelectedMood(null);
+                        setAiInputValue("");
+                      }}
+                      disabled={status === 'submitted'}
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-black dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors hover:bg-accent dark:hover:bg-[#515151] focus-visible:outline-none disabled:opacity-50"
+                    >
+                      <RefreshCcw className="h-4 w-4" />
+                      <span className="sr-only">Clear chat</span>
+                    </button>
+                  }
                 />
-
-                {/* Quick Actions */}
-                <div className="flex items-center justify-between mt-3">
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      "Help me write an introduction message",
-                      "Suggest a collaboration proposal",
-                      "Make my message more professional"
-                    ].map((suggestion, index) => (
-                      <Button
-                        key={index}
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 text-xs text-purple-600 hover:bg-purple-50"
-                        disabled={status === 'submitted'}
-                        onClick={() => {
-                          setAiInputValue(suggestion);
-                        }}
-                      >
-                        {suggestion.replace("Help me write ", "").replace("Make my message more ", "")}
-                      </Button>
-                    ))}
-                  </div>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setAiMessages([]);
-                      setSelectedMood(null);
-                      setAiInputValue("");
-                    }}
-                    disabled={status === 'submitted'}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <RefreshCcw className="h-3 w-3 mr-1" />
-                    Clear
-                  </Button>
-                </div>
               </div>
             </Card>
           </div>
