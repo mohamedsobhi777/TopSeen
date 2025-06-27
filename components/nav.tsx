@@ -25,14 +25,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { GlobalSearch } from "./global-search";
 
 export function MobileNav({
-  filterByCountryId,
-  searchQuery,
-  handleSearchChange,
   onTourTrigger,
 }: {
-  filterByCountryId: any;
-  searchQuery: string;
-  handleSearchChange: (e: any) => void;
   onTourTrigger?: () => void;
 }) {
   return (

@@ -2,7 +2,6 @@ import { AIMessage, ToolMessage } from "@langchain/langgraph-sdk";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import Image from "next/image";
 
 function isComplexValue(value: any): boolean {
   return Array.isArray(value) || (typeof value === "object" && value !== null);
@@ -14,7 +13,7 @@ export function ToolCalls({
   toolCalls: AIMessage["tool_calls"];
 }) {
   if (!toolCalls || toolCalls.length === 0) return null;
-  return null;
+
   return (
     <div className="mx-auto grid max-w-3xl grid-rows-[1fr_auto] gap-2">
       {toolCalls.map((tc, idx) => {
@@ -94,31 +93,6 @@ export function ToolResult({ message }: { message: ToolMessage }) {
         : contentLines.slice(0, 4).join("\n") + "\n..."
       : contentStr;
 
-  if (message.name === "mcp__mcp-hfspace__FLUX_1-schnell-infer") {
-    // Defensive check for content structure and types
-    if (
-      Array.isArray(message.content) &&
-      message.content.length > 0 &&
-      typeof message.content[0] === "object" &&
-      message.content[0] !== null &&
-      "image_url" in message.content[0] &&
-      typeof message.content[0]["image_url"] === "object" &&
-      message.content[0]["image_url"] !== null &&
-      "url" in message.content[0]["image_url"] &&
-      typeof message.content[0]["image_url"]["url"] === "string"
-    ) {
-      return (
-        <Image
-          src={message.content[0]["image_url"]["url"]}
-          alt="Generated Image"
-          width={500}
-          height={500}
-        />
-      );
-    }
-  }
-
-  return null ;
   return (
     <div className="mx-auto grid max-w-3xl grid-rows-[1fr_auto] gap-2">
       <div className="overflow-hidden rounded-lg border border-gray-200">

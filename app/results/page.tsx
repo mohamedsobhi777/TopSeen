@@ -13,7 +13,6 @@ import {
   Video,
   Clock,
 } from "lucide-react";
-import { DesktopNav, MobileNav } from "@/components/nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -157,7 +156,7 @@ function SearchResultCard({ result }: { result: any }) {
             {result.description}
           </p>
           <div className="space-y-2">
-            <Button 
+            <Button
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               onClick={handleSendMessage}
             >
@@ -231,13 +230,13 @@ export default function SearchResultsPage() {
   const filteredResults = dummyResults
     .filter(result => {
       if (!query) return true;
-      
+
       const searchTerm = query.toLowerCase();
-      const matchesQuery = 
+      const matchesQuery =
         result.title.toLowerCase().includes(searchTerm) ||
         result.description.toLowerCase().includes(searchTerm) ||
         (result.category && result.category.toLowerCase().includes(searchTerm));
-      
+
       return matchesQuery;
     });
 
@@ -246,70 +245,58 @@ export default function SearchResultsPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-black/80">
-      <DesktopNav />
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <MobileNav 
-          filterByCountryId={null}
-          searchQuery=""
-          handleSearchChange={() => {}}
-        />
-        <main className="flex-1">
-          <div className="container mx-auto px-4 py-8 max-w-6xl">
-            {/* Search Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2">Search Results</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                {query ? `Results for "${query}"` : "Enter a search term to find users and campaigns"}
-              </p>
-            </div>
-
-            {/* Search Bar */}
-            <div className="mb-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search for users, campaigns, or content..."
-                  className="w-full pl-10 h-12"
-                  value={query}
-                  onChange={(e) => handleSearch(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Result Count */}
-            <div className="flex justify-end mb-6">
-              <div className="text-sm text-gray-500">
-                {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''} found
-              </div>
-            </div>
-
-            {/* Results */}
-            {query ? (
-              <InstagramSearchInterface query={query} />
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredResults.length > 0 ? (
-                  filteredResults.map((result) => (
-                    <SearchResultCard key={result.id} result={result} />
-                  ))
-                ) : (
-                  <Card className="col-span-full">
-                    <CardContent className="p-12 text-center">
-                      <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No results found</h3>
-                      <p className="text-gray-600 dark:text-gray-400">
-                        Start typing to search for Instagram accounts using natural language.
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            )}
-          </div>
-        </main>
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      {/* Search Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Search Results</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          {query ? `Results for "${query}"` : "Enter a search term to find users and campaigns"}
+        </p>
       </div>
+
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search for users, campaigns, or content..."
+            className="w-full pl-10 h-12"
+            value={query}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Result Count */}
+      <div className="flex justify-end mb-6">
+        <div className="text-sm text-gray-500">
+          {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''} found
+        </div>
+      </div>
+
+      {/* Results */}
+      {query ? (
+        <InstagramSearchInterface query={query} />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredResults.length > 0 ? (
+            filteredResults.map((result) => (
+              <SearchResultCard key={result.id} result={result} />
+            ))
+          ) : (
+            <Card className="col-span-full">
+              <CardContent className="p-12 text-center">
+                <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No results found</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Start typing to search for Instagram accounts using natural language.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
 } 

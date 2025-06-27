@@ -123,185 +123,170 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-black/80">
-      <DesktopNav onTourTrigger={handleTourTrigger} />
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <MobileNav 
-          filterByCountryId={null}
-          searchQuery={inputValue}
-          handleSearchChange={(e) => setInputValue(e.target.value)}
-          onTourTrigger={handleTourTrigger}
-        />
-        <main className="min-h-screen flex flex-col items-center justify-center bg-white p-6">
-          <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
-            {/* Logo */}
-            <div className="mb-8 w-20 h-20 relative">
-              <svg 
-                width="100%" 
-                height="100%" 
-                viewBox="0 0 200 200" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-full h-full"
-              > 
-                <path 
-                  fillRule="evenodd" 
-                  clipRule="evenodd" 
-                  d="M99.9994 153.877C141.147 153.877 176.851 127.54 194.627 111.673C201.789 105.28 201.789 94.597 194.627 88.204C176.851 72.3371 141.147 46 99.9994 46C58.8516 46 23.1479 72.3371 5.37163 88.2041C-1.79055 94.597 -1.79054 105.28 5.37164 111.673C23.1479 127.54 58.8516 153.877 99.9994 153.877ZM99.9994 137.57C120.783 137.57 137.631 120.722 137.631 99.9383C137.631 79.1551 120.783 62.3069 99.9994 62.3069C79.2161 62.3069 62.368 79.1551 62.368 99.9383C62.368 120.722 79.2161 137.57 99.9994 137.57Z" 
-                  fill="url(#paint0_linear_105_535)"
-                /> 
-                <defs> 
-                  <linearGradient 
-                    id="paint0_linear_105_535" 
-                    x1="157.499" 
-                    y1="63.2603" 
-                    x2="106.827" 
-                    y2="158.86" 
-                    gradientUnits="userSpaceOnUse"
-                  > 
-                    <stop offset="0.0509862" stopColor="#FFB6E1"/> 
-                    <stop offset="1" stopColor="#FBE3EA"/> 
-                  </linearGradient> 
-                </defs> 
-              </svg>
-            </div>
 
-            {/* Welcome message */}
-            <div className="mb-10 text-center">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col items-center"
+      <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
+        {/* Logo */}
+        <div className="mb-8 w-20 h-20 relative">
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 200 200"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M99.9994 153.877C141.147 153.877 176.851 127.54 194.627 111.673C201.789 105.28 201.789 94.597 194.627 88.204C176.851 72.3371 141.147 46 99.9994 46C58.8516 46 23.1479 72.3371 5.37163 88.2041C-1.79055 94.597 -1.79054 105.28 5.37164 111.673C23.1479 127.54 58.8516 153.877 99.9994 153.877ZM99.9994 137.57C120.783 137.57 137.631 120.722 137.631 99.9383C137.631 79.1551 120.783 62.3069 99.9994 62.3069C79.2161 62.3069 62.368 79.1551 62.368 99.9383C62.368 120.722 79.2161 137.57 99.9994 137.57Z"
+              fill="url(#paint0_linear_105_535)"
+            />
+            <defs>
+              <linearGradient
+                id="paint0_linear_105_535"
+                x1="157.499"
+                y1="63.2603"
+                x2="106.827"
+                y2="158.86"
+                gradientUnits="userSpaceOnUse"
               >
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-400 mb-2">
-                  Find Instagram Accounts
-                </h1>
-                <p className="text-gray-500 max-w-md">
-                  Search for influencers, businesses, and creators to grow your campaigns
-                </p>
-              </motion.div>
-            </div>
+                <stop offset="0.0509862" stopColor="#FFB6E1" />
+                <stop offset="1" stopColor="#FBE3EA" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
 
-            {/* Input area with integrated functions and file upload */}
-            <div className="w-full bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-4">
-              <div className="p-4">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Search for Instagram accounts..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  className="w-full text-gray-700 text-base outline-none placeholder:text-gray-400"
-                />
-              </div>
+        {/* Welcome message */}
+        <div className="mb-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center"
+          >
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-400 mb-2">
+              Find Instagram Accounts
+            </h1>
+            <p className="text-gray-500 max-w-md">
+              Search for influencers, businesses, and creators to grow your campaigns
+            </p>
+          </motion.div>
+        </div>
 
-
-
-              {/* Search, Deep Research, Reason functions and actions */}
-              <div className="px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setSearchEnabled(!searchEnabled)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                      searchEnabled
-                        ? "bg-purple-50 text-purple-600 hover:bg-purple-100"
-                        : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                    }`}
-                  >
-                    <Search className="w-4 h-4" />
-                    <span>Search</span>
-                  </button>
-                  <button
-                    onClick={() => setDeepResearchEnabled(!deepResearchEnabled)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                      deepResearchEnabled
-                        ? "bg-purple-50 text-purple-600 hover:bg-purple-100"
-                        : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                    }`}
-                  >
-                    <Instagram
-                      className={`w-4 h-4 ${
-                        deepResearchEnabled ? "text-purple-600" : "text-gray-400"
-                      }`}
-                    />
-                    <span>Filter</span>
-                  </button>
-                  <button
-                    onClick={() => setReasonEnabled(!reasonEnabled)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                      reasonEnabled
-                        ? "bg-purple-50 text-purple-600 hover:bg-purple-100"
-                        : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                    }`}
-                  >
-                    <Sparkles
-                      className={`w-4 h-4 ${
-                        reasonEnabled ? "text-purple-600" : "text-gray-400"
-                      }`}
-                    />
-                    <span>Analytics</span>
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!inputValue.trim()}
-                    className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-                      inputValue.trim()
-                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    <ArrowUp className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-
-            </div>
-
-                        {/* Command categories */}
-            <div className="w-full grid grid-cols-3 gap-4 mb-4">
-              <CommandButton icon={<Users className="w-5 h-5" />} label="Influencers" isActive={activeCommandCategory === "influencers"} onClick={() => setActiveCommandCategory(activeCommandCategory === "influencers" ? null : "influencers")} />
-              <CommandButton icon={<Instagram className="w-5 h-5" />} label="Business" isActive={activeCommandCategory === "business"} onClick={() => setActiveCommandCategory(activeCommandCategory === "business" ? null : "business")} />
-              <CommandButton icon={<Sparkles className="w-5 h-5" />} label="Creators" isActive={activeCommandCategory === "creators"} onClick={() => setActiveCommandCategory(activeCommandCategory === "creators" ? null : "creators")} />
-            </div>
-
-                        {/* Command suggestions */}
-            <AnimatePresence>
-              {activeCommandCategory && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="w-full mb-6 overflow-hidden">
-                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="p-3 border-b border-gray-100">
-                      <h3 className="text-sm font-medium text-gray-700">
-                        {activeCommandCategory === "influencers" ? "Influencer search suggestions" : activeCommandCategory === "business" ? "Business account suggestions" : "Creator search suggestions"}
-                      </h3>
-                    </div>
-                    <ul className="divide-y divide-gray-100">
-                      {commandSuggestions[activeCommandCategory as keyof typeof commandSuggestions].map((suggestion, index) => (
-                        <motion.li key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.03 }} onClick={() => handleCommandSelect(suggestion)} className="p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-75">
-                          <div className="flex items-center gap-3">
-                            {activeCommandCategory === "influencers" ? (
-                              <Users className="w-4 h-4 text-purple-600" />
-                            ) : activeCommandCategory === "business" ? (
-                              <Instagram className="w-4 h-4 text-purple-600" />
-                            ) : (
-                              <Sparkles className="w-4 h-4 text-purple-600" />
-                            )}
-                            <span className="text-sm text-gray-700">{suggestion}</span>
-                          </div>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* Input area with integrated functions and file upload */}
+        <div className="w-full bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden mb-4">
+          <div className="p-4">
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="Search for Instagram accounts..."
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              className="w-full text-gray-700 text-base outline-none placeholder:text-gray-400"
+            />
           </div>
-        </main>
+
+
+
+          {/* Search, Deep Research, Reason functions and actions */}
+          <div className="px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSearchEnabled(!searchEnabled)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${searchEnabled
+                    ? "bg-purple-50 text-purple-600 hover:bg-purple-100"
+                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                  }`}
+              >
+                <Search className="w-4 h-4" />
+                <span>Search</span>
+              </button>
+              <button
+                onClick={() => setDeepResearchEnabled(!deepResearchEnabled)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${deepResearchEnabled
+                    ? "bg-purple-50 text-purple-600 hover:bg-purple-100"
+                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                  }`}
+              >
+                <Instagram
+                  className={`w-4 h-4 ${deepResearchEnabled ? "text-purple-600" : "text-gray-400"
+                    }`}
+                />
+                <span>Filter</span>
+              </button>
+              <button
+                onClick={() => setReasonEnabled(!reasonEnabled)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${reasonEnabled
+                    ? "bg-purple-50 text-purple-600 hover:bg-purple-100"
+                    : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                  }`}
+              >
+                <Sparkles
+                  className={`w-4 h-4 ${reasonEnabled ? "text-purple-600" : "text-gray-400"
+                    }`}
+                />
+                <span>Analytics</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim()}
+                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${inputValue.trim()
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+
+        </div>
+
+        {/* Command categories */}
+        <div className="w-full grid grid-cols-3 gap-4 mb-4">
+          <CommandButton icon={<Users className="w-5 h-5" />} label="Influencers" isActive={activeCommandCategory === "influencers"} onClick={() => setActiveCommandCategory(activeCommandCategory === "influencers" ? null : "influencers")} />
+          <CommandButton icon={<Instagram className="w-5 h-5" />} label="Business" isActive={activeCommandCategory === "business"} onClick={() => setActiveCommandCategory(activeCommandCategory === "business" ? null : "business")} />
+          <CommandButton icon={<Sparkles className="w-5 h-5" />} label="Creators" isActive={activeCommandCategory === "creators"} onClick={() => setActiveCommandCategory(activeCommandCategory === "creators" ? null : "creators")} />
+        </div>
+
+        {/* Command suggestions */}
+        <AnimatePresence>
+          {activeCommandCategory && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="w-full mb-6 overflow-hidden">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="p-3 border-b border-gray-100">
+                  <h3 className="text-sm font-medium text-gray-700">
+                    {activeCommandCategory === "influencers" ? "Influencer search suggestions" : activeCommandCategory === "business" ? "Business account suggestions" : "Creator search suggestions"}
+                  </h3>
+                </div>
+                <ul className="divide-y divide-gray-100">
+                  {commandSuggestions[activeCommandCategory as keyof typeof commandSuggestions].map((suggestion, index) => (
+                    <motion.li key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.03 }} onClick={() => handleCommandSelect(suggestion)} className="p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-75">
+                      <div className="flex items-center gap-3">
+                        {activeCommandCategory === "influencers" ? (
+                          <Users className="w-4 h-4 text-purple-600" />
+                        ) : activeCommandCategory === "business" ? (
+                          <Instagram className="w-4 h-4 text-purple-600" />
+                        ) : (
+                          <Sparkles className="w-4 h-4 text-purple-600" />
+                        )}
+                        <span className="text-sm text-gray-700">{suggestion}</span>
+                      </div>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      
+
+
       <ProductTour
         open={tourOpen}
         setOpen={setTourOpen}

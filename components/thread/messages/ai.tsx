@@ -85,8 +85,8 @@ function Interrupt({
           <ThreadView interrupt={interruptValue} />
         )}
       {interruptValue &&
-      !isAgentInboxInterruptSchema(interruptValue) &&
-      isLastMessage ? (
+        !isAgentInboxInterruptSchema(interruptValue) &&
+        isLastMessage ? (
         <GenericInterruptView interrupt={interruptValue} />
       ) : null}
     </>
@@ -111,7 +111,7 @@ export function AssistantMessage({
 
   const thread = useStreamContext();
   const isLastMessage =
-    thread.messages[thread.messages.length - 1]?.id === message?.id;
+    thread.messages[thread.messages.length - 1].id === message?.id;
   const hasNoAIOrToolMessages = !thread.messages.find(
     (m) => m.type === "ai" || m.type === "tool",
   );
@@ -141,8 +141,9 @@ export function AssistantMessage({
   }
 
   return (
-    <div className="group mr-auto flex items-start gap-2">
-      <div className="flex flex-col gap-2">
+    <div className="group w-full flex justify-start">
+      <div className="flex items-start gap-2 max-w-[80%]">
+        <div className="flex flex-col gap-2">
         {isToolResult ? (
           <>
             <ToolResult message={message} />
@@ -206,6 +207,7 @@ export function AssistantMessage({
             </div>
           </>
         )}
+        </div>
       </div>
     </div>
   );
@@ -213,11 +215,13 @@ export function AssistantMessage({
 
 export function AssistantMessageLoading() {
   return (
-    <div className="mr-auto flex items-start gap-2">
-      <div className="bg-muted flex h-8 items-center gap-1 rounded-2xl px-4 py-2">
-        <div className="bg-foreground/50 h-1.5 w-1.5 animate-[pulse_1.5s_ease-in-out_infinite] rounded-full"></div>
-        <div className="bg-foreground/50 h-1.5 w-1.5 animate-[pulse_1.5s_ease-in-out_0.5s_infinite] rounded-full"></div>
-        <div className="bg-foreground/50 h-1.5 w-1.5 animate-[pulse_1.5s_ease-in-out_1s_infinite] rounded-full"></div>
+    <div className="group w-full flex justify-start">
+      <div className="flex items-start gap-2 max-w-[80%]">
+        <div className="bg-muted flex h-8 items-center gap-1 rounded-2xl px-4 py-2">
+          <div className="bg-foreground/50 h-1.5 w-1.5 animate-[pulse_1.5s_ease-in-out_infinite] rounded-full"></div>
+          <div className="bg-foreground/50 h-1.5 w-1.5 animate-[pulse_1.5s_ease-in-out_0.5s_infinite] rounded-full"></div>
+          <div className="bg-foreground/50 h-1.5 w-1.5 animate-[pulse_1.5s_ease-in-out_1s_infinite] rounded-full"></div>
+        </div>
       </div>
     </div>
   );

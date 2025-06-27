@@ -12,11 +12,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { PanelRightOpen, PanelRightClose } from "lucide-react";
+import { PanelRightOpen, PanelRightClose } from "lucide-react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { PanelLeftOpenIcon } from "@/components/icons/panel-left-open";
-import { PanelRightOpenIcon } from "@/components/icons/panel-right-open";
-import { PanelLeftCloseIcon } from "@/components/icons/panel-left-close";
 
 function ThreadList({
   threads,
@@ -99,20 +96,21 @@ export default function ThreadHistory() {
 
   return (
     <>
-      <div className="shadow-inner-right hidden h-screen w-[300px] shrink-0 flex-col items-start justify-start gap-6 border-r-[.5px] border-slate-300 lg:flex">
+      <div className="shadow-inner-right hidden h-screen w-[300px] shrink-0 flex-col items-start justify-start gap-6 border-r-[1px] border-slate-300 lg:flex">
         <div className="flex w-full items-center justify-between px-4 pt-1.5">
           <Button
+            className="hover:bg-gray-100"
             variant="ghost"
             onClick={() => setChatHistoryOpen((p) => !p)}
           >
             {chatHistoryOpen ? (
-              <PanelLeftCloseIcon className="size-5" />
+              <PanelRightOpen className="size-5" />
             ) : (
-              <PanelRightOpenIcon className="size-5" />
+              <PanelRightClose className="size-5" />
             )}
           </Button>
           <h1 className="text-xl font-semibold tracking-tight">
-            Chat History
+            Thread History
           </h1>
         </div>
         {threadsLoading ? (
@@ -134,7 +132,7 @@ export default function ThreadHistory() {
             className="flex lg:hidden"
           >
             <SheetHeader>
-              <SheetTitle>Chat History</SheetTitle>
+              <SheetTitle>Thread History</SheetTitle>
             </SheetHeader>
             <ThreadList
               threads={threads}

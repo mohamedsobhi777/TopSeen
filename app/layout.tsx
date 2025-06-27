@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { cn } from "@/lib/utils";
 
 import "./globals.css";
+import { DesktopNav, MobileNav } from "@/components/nav";
 
 const playfair = Playfair_Display({
   variable: "--playfair",
@@ -85,7 +86,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             disableTransitionOnChange
           >
             <TooltipProvider>
-              <main className="bg-background  ">{children}</main>
+              <main className="bg-background  ">
+
+
+                <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-black/80">
+                  <DesktopNav />
+                  <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+                    <MobileNav />
+
+                    {children}
+
+                  </div>
+                </div>
+              </main>
             </TooltipProvider>
             <Toaster richColors position="top-center" />
           </ThemeProvider>

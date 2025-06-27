@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { User, Settings, CreditCard, BarChart3, MessageCircle, Users, Calendar, Crown } from "lucide-react";
-import { DesktopNav, MobileNav } from "@/components/nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -94,9 +93,9 @@ function StatsCard({ title, value, subtitle, icon: Icon, color = "blue", percent
   );
 }
 
-function InstagramCredentialsForm({ user, onUpdate }: { 
-  user: UserAccount; 
-  onUpdate: (user: UserAccount) => void; 
+function InstagramCredentialsForm({ user, onUpdate }: {
+  user: UserAccount;
+  onUpdate: (user: UserAccount) => void;
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -117,7 +116,7 @@ function InstagramCredentialsForm({ user, onUpdate }: {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const response = await fetch('/api/user-settings', {
         method: 'POST',
@@ -129,8 +128,8 @@ function InstagramCredentialsForm({ user, onUpdate }: {
 
       if (response.ok) {
         const result = await response.json();
-        onUpdate({ 
-          ...user, 
+        onUpdate({
+          ...user,
           instagramUsername: formData.instagramUsername,
           instagramPassword: formData.instagramPassword,
         });
@@ -201,8 +200,8 @@ function InstagramCredentialsForm({ user, onUpdate }: {
       </div>
 
       <div className="flex gap-2 pt-4">
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isLoading || !formData.instagramUsername || !formData.instagramPassword}
           className="flex-1"
         >
@@ -221,7 +220,7 @@ function InstagramCredentialsForm({ user, onUpdate }: {
           <div className="text-sm">
             <p className="font-medium text-blue-900">Why do we need your credentials?</p>
             <p className="text-blue-700 mt-1">
-              We use your Instagram credentials to send automated messages and discover accounts. 
+              We use your Instagram credentials to send automated messages and discover accounts.
               Your credentials are encrypted and never shared with third parties.
             </p>
           </div>
@@ -264,7 +263,7 @@ function SubscriptionCard({ user }: { user: UserAccount }) {
             {user.monthlyMessageLimit - user.currentMonthUsage} messages remaining
           </p>
         </div>
-        
+
         <div>
           <div className="flex justify-between text-sm mb-2">
             <span>Instagram Accounts</span>
@@ -321,16 +320,7 @@ export default function AccountPage() {
   }, [user.instagramUsername, user.instagramPassword]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-black/80">
-      <DesktopNav />
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <MobileNav 
-          filterByCountryId={null}
-          searchQuery=""
-          handleSearchChange={() => {}}
-        />
-        <main className="flex-1">
-          <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Account Settings</h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -348,7 +338,7 @@ export default function AccountPage() {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <SubscriptionCard user={user} />
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
@@ -386,7 +376,7 @@ export default function AccountPage() {
         <TabsContent value="subscription" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <SubscriptionCard user={user} />
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Billing Information</CardTitle>
@@ -403,13 +393,13 @@ export default function AccountPage() {
                   </div>
                   <Button variant="outline" size="sm">Edit</Button>
                 </div>
-                
+
                 <Button variant="outline" className="w-full">
                   Add Payment Method
                 </Button>
-                
+
                 <Separator />
-                
+
                 <div>
                   <h4 className="font-medium mb-2">Billing History</h4>
                   <div className="space-y-2">
@@ -461,9 +451,6 @@ export default function AccountPage() {
           </Card>
         </TabsContent>
       </Tabs>
-          </div>
-        </main>
-      </div>
     </div>
   );
 } 

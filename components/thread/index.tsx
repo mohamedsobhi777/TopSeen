@@ -1,9 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
-import { ReactNode, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 import { useStreamContext } from "@/providers/Stream";
-import { useState, FormEvent } from "react";
+import { useState } from "react";
 import { Button } from "../ui/button";
 import { Checkpoint, Message } from "@langchain/langgraph-sdk";
 import { AssistantMessage, AssistantMessageLoading } from "./messages/ai";
@@ -12,24 +11,23 @@ import {
   DO_NOT_RENDER_ID_PREFIX,
   ensureToolCallsHaveResponses,
 } from "@/lib/ensure-tool-responses";
-
+import { LangGraphLogoSVG } from "../icons/langgraph";
 import { TooltipIconButton } from "./tooltip-icon-button";
 import {
-  ArrowDown,
-  LoaderCircle,
+  PanelRightOpen,
+  PanelRightClose,
   SquarePen,
   XIcon,
-  SendIcon,
-  PanelRightCloseIcon,
+  CircleX,
+  RefreshCcw,
 } from "lucide-react";
 import { useQueryState, parseAsBoolean } from "nuqs";
-import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 import ThreadHistory from "./history";
 import { toast } from "sonner";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
-
+import { Label } from "../ui/label";
+import { GitHubSVG } from "../icons/github";
 import {
   Tooltip,
   TooltipContent,
@@ -42,47 +40,31 @@ import {
   ArtifactTitle,
   useArtifactContext,
 } from "./artifact";
-import { PanelRightOpenIcon } from "../icons/panel-right-open";
-import { PanelLeftCloseIcon } from "../icons/panel-left-close";
+import { PromptBox } from "@/components/ui/chatgpt-prompt-input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
-function StickyToBottomContent(props: {
-  content: ReactNode;
-  footer?: ReactNode;
-  className?: string;
-  contentClassName?: string;
-}) {
-  const context = useStickToBottomContext();
+function OpenGitHubRepo() {
   return (
-    <div
-      ref={context.scrollRef}
-      style={{ width: "100%", height: "100%" }}
-      className={props.className}
-    >
-      <div
-        ref={context.contentRef}
-        className={props.contentClassName}
-      >
-        {props.content}
-      </div>
-
-      {props.footer}
-    </div>
-  );
-}
-
-function ScrollToBottom(props: { className?: string }) {
-  const { isAtBottom, scrollToBottom } = useStickToBottomContext();
-
-  if (isAtBottom) return null;
-  return (
-    <Button
-      variant="outline"
-      className={props.className}
-      onClick={() => scrollToBottom()}
-    >
-      <ArrowDown className="h-4 w-4" />
-      <span>Scroll to bottom</span>
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <a
+            href="https://github.com/langchain-ai/agent-chat-ui"
+            target="_blank"
+            className="flex items-center justify-center"
+          >
+            <GitHubSVG
+              width="24"
+              height="24"
+            />
+          </a>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          <p>Open GitHub repo</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -93,13 +75,14 @@ export function Thread() {
   const [threadId, _setThreadId] = useQueryState("threadId");
   const [chatHistoryOpen, setChatHistoryOpen] = useQueryState(
     "chatHistoryOpen",
-    parseAsBoolean.withDefault(false),
+    parseAsBoolean.withDefault(true),
   );
   const [hideToolCalls, setHideToolCalls] = useQueryState(
     "hideToolCalls",
     parseAsBoolean.withDefault(false),
   );
   const [input, setInput] = useState("");
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [firstTokenReceived, setFirstTokenReceived] = useState(false);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
 
@@ -151,7 +134,7 @@ export function Thread() {
     if (
       messages.length !== prevMessageLength.current &&
       messages?.length &&
-      messages[messages.length - 1]?.type === "ai"
+      messages[messages.length - 1].type === "ai"
     ) {
       setFirstTokenReceived(true);
     }
@@ -159,15 +142,20 @@ export function Thread() {
     prevMessageLength.current = messages.length;
   }, [messages]);
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const handleSubmit = (value: string, mood?: string) => {
+    if (value.trim().length === 0 || isLoading)
+      return;
     setFirstTokenReceived(false);
+
+    // Apply mood to the message if selected
+    const messageText = mood ? `[Mood: ${mood}] ${value}` : value;
 
     const newHumanMessage: Message = {
       id: uuidv4(),
       type: "human",
-      content: input,
+      content: [
+        { type: "text", text: messageText }
+      ] as Message["content"],
     };
 
     const toolMessages = ensureToolCallsHaveResponses(stream.messages);
@@ -194,6 +182,10 @@ export function Thread() {
     setInput("");
   };
 
+  const handleMoodChange = (mood: string | null) => {
+    setSelectedMood(mood);
+  };
+
   const handleRegenerate = (
     parentCheckpoint: Checkpoint | null | undefined,
   ) => {
@@ -212,10 +204,11 @@ export function Thread() {
   );
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex min-h-screen w-full bg-muted/40 dark:bg-black/80">
+      {/* Sidebar */}
       <div className="relative hidden lg:flex">
         <motion.div
-          className="absolute z-20 h-full overflow-hidden "
+          className="absolute z-20 h-full overflow-hidden border-r bg-white"
           style={{ width: 300 }}
           animate={
             isLargeScreen
@@ -238,110 +231,82 @@ export function Thread() {
         </motion.div>
       </div>
 
-      <div
-        className={cn(
-          "grid w-full grid-cols-[1fr_0fr] transition-all duration-500",
-          artifactOpen && "grid-cols-[3fr_2fr]",
-        )}
+      {/* Main Content */}
+      <div 
+        className="flex-1"
+        style={{
+          marginLeft: chatHistoryOpen && isLargeScreen ? 300 : 0,
+          transition: isLargeScreen ? "margin-left 0.3s ease" : "none"
+        }}
       >
-        <motion.div
-          className={cn(
-            "relative flex min-w-0 flex-1 flex-col overflow-hidden",
-            !chatStarted && "grid-rows-[1fr]",
-          )}
-          layout={isLargeScreen}
-          animate={{
-            marginLeft: chatHistoryOpen ? (isLargeScreen ? 300 : 0) : 0,
-            width: chatHistoryOpen
-              ? isLargeScreen
-                ? "calc(100% - 300px)"
-                : "100%"
-              : "100%",
-          }}
-          transition={
-            isLargeScreen
-              ? { type: "spring", stiffness: 300, damping: 30 }
-              : { duration: 0 }
-          }
-        >
-          {!chatStarted && (
-            <div className="absolute top-0 left-0 z-10 flex w-full items-center justify-between gap-3 p-2 pl-4">
-              <div>
-                {(!chatHistoryOpen || !isLargeScreen) && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => setChatHistoryOpen((p) => !p)}
-                  >
-                    {chatHistoryOpen ? (
-                      <PanelLeftCloseIcon className="size-5" />
-                    ) : (
-                      <PanelRightOpenIcon className="size-5" />
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-          {chatStarted && (
-            <div className="relative z-10 flex items-center justify-between gap-3 p-2">
-              <div className="relative flex items-center justify-start gap-2">
-                <div className="absolute left-0 z-10">
-                  {(!chatHistoryOpen || !isLargeScreen) && (
-                    <Button
-                      variant="ghost"
-                      onClick={() => setChatHistoryOpen((p) => !p)}
-                    >
-                      {chatHistoryOpen ? (
-                        <PanelLeftCloseIcon className="size-5" />
-                      ) : (
-                        <PanelRightCloseIcon className="size-5" />
-                      )}
-                    </Button>
-                  )}
-                </div>
-                <motion.button
-                  className="flex cursor-pointer items-center gap-2"
-                  onClick={() => setThreadId(null)}
-                  animate={{
-                    marginLeft: !chatHistoryOpen ? 48 : 0,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                  }}
-                >
-                  <span className="text-xl font-semibold tracking-tight">
-                    Agents Chatroom
-                  </span>
-                </motion.button>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <TooltipIconButton
-                  size="lg"
-                  className="p-4"
-                  tooltip="New thread"
+        <div className="container mx-auto px-4 py-4 max-w-4xl h-[calc(100vh-2rem)]">
+          {/* Header */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {(!chatHistoryOpen || !isLargeScreen) && (
+                <Button
+                  className="hover:bg-gray-100"
                   variant="ghost"
-                  onClick={() => setThreadId(null)}
+                  onClick={() => setChatHistoryOpen((p) => !p)}
                 >
-                  <SquarePen className="size-5" />
-                </TooltipIconButton>
-              </div>
-
-              <div className="from-background to-background/0 absolute inset-x-0 top-full h-5 bg-gradient-to-b" />
-            </div>
-          )}
-
-          <StickToBottom className="relative flex-1 overflow-hidden">
-            <StickyToBottomContent
-              className={cn(
-                "absolute inset-0 overflow-y-scroll px-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-transparent",
-                !chatStarted && "mt-[25vh] flex flex-col items-stretch",
-                chatStarted && "grid grid-rows-[1fr_auto]",
+                  {chatHistoryOpen ? (
+                    <PanelRightOpen className="size-5" />
+                  ) : (
+                    <PanelRightClose className="size-5" />
+                  )}
+                </Button>
               )}
-              contentClassName="pt-8 pb-16  max-w-3xl mx-auto flex flex-col gap-4 w-full"
-              content={
+              <div className="flex items-center gap-3">
+                <LangGraphLogoSVG className="h-8 w-8" />
+                <div>
+                  <h1 className="text-lg font-semibold">Agent Chat</h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Chat with AI agents for your tasks
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <OpenGitHubRepo />
+              <TooltipIconButton
+                tooltip="New thread"
+                variant="ghost"
+                onClick={() => setThreadId(null)}
+              >
+                <SquarePen className="size-5" />
+              </TooltipIconButton>
+            </div>
+          </div>
+
+          {/* Chat Card */}
+          <Card className="flex flex-col h-[calc(100%-5rem)]">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <LangGraphLogoSVG className="h-5 w-5" />
+                Agent Chat
+                {messages.length > 0 && (
+                  <span className="text-sm font-normal text-gray-500">
+                    ({messages.length} messages)
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <Separator />
+
+            {/* Messages */}
+            <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col">
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <LangGraphLogoSVG className="h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    Start a conversation
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md">
+                    Ask me anything or get help with your tasks. I can assist with content creation, analysis, and more.
+                  </p>
+                </div>
+              ) : (
                 <>
                   {messages
                     .filter((m) => !m.id?.startsWith(DO_NOT_RENDER_ID_PREFIX))
@@ -361,8 +326,7 @@ export function Thread() {
                         />
                       ),
                     )}
-                  {/* Special rendering case where there are no AI/tool messages, but there is an interrupt.
-                    We need to render it outside of the messages list, since there are no messages to render */}
+                  {/* Special rendering case where there are no AI/tool messages, but there is an interrupt */}
                   {hasNoAIOrToolMessages && !!stream.interrupt && (
                     <AssistantMessage
                       key="interrupt-msg"
@@ -375,100 +339,72 @@ export function Thread() {
                     <AssistantMessageLoading />
                   )}
                 </>
-              }
-              footer={
-                <div className="relative flex flex-col items-center gap-8">
+              )}
+            </CardContent>
 
-                  {!chatStarted && (
-                    <div className="flex items-center gap-3">
-                      <h1 className="text-3xl font-semibold tracking-tight text-text/90">
-                        Start a new conversation
-                      </h1>
-                    </div>
-                  )}
-
-                  <ScrollToBottom className="animate-in fade-in-0 zoom-in-95 absolute bottom-full left-1/2 mb-4 -translate-x-1/2" />
-
-                  <div className="bg-muted z-10 mx-auto mb-8 w-full max-w-3xl border shadow-xs relative">
-                    <form
-                      onSubmit={handleSubmit}
-                      className="mx-auto grid max-w-3xl grid-rows-[1fr_auto] gap-2"
+            {/* Input */}
+            <div className="p-4">
+              <PromptBox
+                placeholder="Type your message..."
+                disabled={isLoading}
+                value={input}
+                onChange={setInput}
+                className="rounded-[28px]"
+                onSubmit={handleSubmit}
+                onMoodChange={handleMoodChange}
+                additionalActions={
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInput("");
+                        setSelectedMood(null);
+                      }}
+                      disabled={isLoading}
+                      className="flex h-6 w-6 items-center justify-center rounded-full text-black dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors hover:bg-accent dark:hover:bg-[#515151] focus-visible:outline-none disabled:opacity-50"
                     >
-                      <textarea
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (
-                            e.key === "Enter" &&
-                            !e.shiftKey &&
-                            !e.metaKey &&
-                            !e.nativeEvent.isComposing
-                          ) {
-                            e.preventDefault();
-                            const el = e.target as HTMLElement | undefined;
-                            const form = el?.closest("form");
-                            form?.requestSubmit();
-                          }
-                        }}
-                        placeholder="Type your message..."
-                        className="field-sizing-content resize-none border-none bg-transparent p-3.5 pb-0 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none"
-                      />
-
-                      <div className="flex items-center justify-between p-2 pt-4">
-                        {/* <div>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="render-tool-calls"
-                              checked={hideToolCalls ?? false}
-                              onCheckedChange={setHideToolCalls}
-                            />
-                            <Label
-                              htmlFor="render-tool-calls"
-                              className="text-sm text-gray-600"
-                            >
-                              Hide Tool Calls
-                            </Label>
-                          </div>
-                        </div> */}
-                        {stream.isLoading ? (
-                          <Button
-                            key="stop"
-                            onClick={() => stream.stop()}
-                          >
-                            <LoaderCircle className="h-4 w-4 animate-spin" />
-                            Cancel
-                          </Button>
-                        ) : (
-                          <Button
-                            type="submit"
-                            className="shadow-md transition-all"
-                            variant="outline"
-                            disabled={isLoading || !input.trim()}
-                          >
-                            <SendIcon className="h-4 w-4 mr-2" />
-                            Send
-                          </Button>
-                        )}
-                      </div>
-                    </form>
-                  </div>
+                      <RefreshCcw className="h-4 w-4" />
+                      <span className="sr-only">Clear chat</span>
+                    </button>
+                    {stream.isLoading && (
+                      <button
+                        type="button"
+                        onClick={() => stream.stop()}
+                        className="flex h-6 w-6 items-center justify-center rounded-full text-red-600 hover:text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none"
+                      >
+                        <CircleX className="h-4 w-4" />
+                        <span className="sr-only">Stop generation</span>
+                      </button>
+                    )}
+                  </>
+                }
+              />
+              
+              {/* Tool calls toggle below the prompt box */}
+              <div className="mt-4 flex items-center justify-center">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="render-tool-calls"
+                    checked={hideToolCalls ?? false}
+                    onCheckedChange={setHideToolCalls}
+                  />
+                  <Label
+                    htmlFor="render-tool-calls"
+                    className="text-sm text-gray-600"
+                  >
+                    Hide Tool Calls
+                  </Label>
                 </div>
-              }
-            // footer={
-            //   <div className="flex-1 flex items-center justify-center">
-            //     <div className="text-center p-6">
-            //       <h2 className="text-2xl font-bold mb-2">Select an agent to start chatting</h2>
-            //       <p className="text-gray-500">
-            //         Choose an agent from the sidebar to begin a conversation.
-            //       </p>
-            //     </div>
-            //   </div>
-            // }
-            />
-          </StickToBottom>
-        </motion.div>
-        <div className="relative flex flex-col border-l">
-          <div className="absolute inset-0 flex min-w-[30vw] flex-col">
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Artifact Panel (keep if needed) */}
+      {artifactOpen && (
+        <div className="relative flex flex-col border-l w-[40vw] min-w-[300px]">
+          <div className="absolute inset-0 flex flex-col">
             <div className="grid grid-cols-[1fr_auto] border-b p-4">
               <ArtifactTitle className="truncate overflow-hidden" />
               <button
@@ -481,7 +417,7 @@ export function Thread() {
             <ArtifactContent className="relative flex-grow" />
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
