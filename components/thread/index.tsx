@@ -204,83 +204,53 @@ export function Thread() {
   );
 
   return (
-    <div className="flex min-h-screen w-full bg-muted/40 dark:bg-black/80">
-      {/* Sidebar */}
-      <div className="relative hidden lg:flex">
-        <motion.div
-          className="absolute z-20 h-full overflow-hidden border-r bg-white"
-          style={{ width: 300 }}
-          animate={
-            isLargeScreen
-              ? { x: chatHistoryOpen ? 0 : -300 }
-              : { x: chatHistoryOpen ? 0 : -300 }
-          }
-          initial={{ x: -300 }}
-          transition={
-            isLargeScreen
-              ? { type: "spring", stiffness: 300, damping: 30 }
-              : { duration: 0 }
-          }
-        >
-          <div
-            className="relative h-full"
-            style={{ width: 300 }}
-          >
-            <ThreadHistory />
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Main Content */}
-      <div 
-        className="flex-1"
-        style={{
-          marginLeft: chatHistoryOpen && isLargeScreen ? 300 : 0,
-          transition: isLargeScreen ? "margin-left 0.3s ease" : "none"
-        }}
-      >
-        <div className="container mx-auto px-4 py-4 max-w-4xl h-[calc(100vh-2rem)]">
-          {/* Header */}
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {(!chatHistoryOpen || !isLargeScreen) && (
-                <Button
-                  className="hover:bg-gray-100"
-                  variant="ghost"
-                  onClick={() => setChatHistoryOpen((p) => !p)}
-                >
-                  {chatHistoryOpen ? (
-                    <PanelRightOpen className="size-5" />
-                  ) : (
-                    <PanelRightClose className="size-5" />
-                  )}
-                </Button>
-              )}
-              <div className="flex items-center gap-3">
-                <LangGraphLogoSVG className="h-8 w-8" />
-                <div>
-                  <h1 className="text-lg font-semibold">Agent Chat</h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Chat with AI agents for your tasks
-                  </p>
-                </div>
+    <div className="min-h-[calc(100vh-3.5rem)] w-full bg-muted/40 dark:bg-black/80">
+      <div className="container mx-auto px-4 py-4 max-w-7xl h-[calc(100vh-5.5rem)]">
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Mobile menu toggle */}
+            <Button
+              className="lg:hidden hover:bg-gray-100"
+              variant="ghost"
+              size="sm"
+              onClick={() => setChatHistoryOpen((p) => !p)}
+            >
+              <PanelRightOpen className="size-4" />
+            </Button>
+            
+            <div className="flex items-center gap-3">
+              <LangGraphLogoSVG className="h-8 w-8" />
+              <div>
+                <h1 className="text-lg font-semibold">Agent Chat</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Chat with AI agents for your tasks
+                </p>
               </div>
             </div>
-            
-            <div className="flex items-center gap-4">
-              <OpenGitHubRepo />
-              <TooltipIconButton
-                tooltip="New thread"
-                variant="ghost"
-                onClick={() => setThreadId(null)}
-              >
-                <SquarePen className="size-5" />
-              </TooltipIconButton>
-            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <OpenGitHubRepo />
+            <TooltipIconButton
+              tooltip="New thread"
+              variant="ghost"
+              onClick={() => setThreadId(null)}
+            >
+              <SquarePen className="size-5" />
+            </TooltipIconButton>
+          </div>
+        </div>
+
+        {/* Main Card with Threads and Chat */}
+        <Card className="flex h-[calc(100%-5rem)]">
+          {/* Threads Panel - Left Side */}
+          <div className="hidden lg:flex w-80 border-r border-border bg-background rounded-l-lg">
+            <ThreadHistory />
           </div>
 
-          {/* Chat Card */}
-          <Card className="flex flex-col h-[calc(100%-5rem)]">
+          {/* Chat Panel - Right Side */}
+          <div className="flex flex-col flex-1">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <LangGraphLogoSVG className="h-5 w-5" />
@@ -379,26 +349,9 @@ export function Thread() {
                   </>
                 }
               />
-              
-              {/* Tool calls toggle below the prompt box */}
-              <div className="mt-4 flex items-center justify-center">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="render-tool-calls"
-                    checked={hideToolCalls ?? false}
-                    onCheckedChange={setHideToolCalls}
-                  />
-                  <Label
-                    htmlFor="render-tool-calls"
-                    className="text-sm text-gray-600"
-                  >
-                    Hide Tool Calls
-                  </Label>
-                </div>
-              </div>
             </div>
-          </Card>
-        </div>
+          </div>
+        </Card>
       </div>
 
       {/* Artifact Panel (keep if needed) */}

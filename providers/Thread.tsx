@@ -34,23 +34,37 @@ function getThreadSearchMetadata(
 }
 
 export function ThreadProvider({ children }: { children: ReactNode }) {
-  const [apiUrl] = useQueryState("apiUrl");
-  const [assistantId] = useQueryState("assistantId");
+  const [apiUrlParam] = useQueryState("apiUrl");
+  const [assistantIdParam] = useQueryState("assistantId");
   const [threads, setThreads] = useState<Thread[]>([]);
   const [threadsLoading, setThreadsLoading] = useState(false);
 
+  // Use environment variables as defaults, similar to StreamProvider
+  const apiUrl = apiUrlParam || process.env.NEXT_PUBLIC_API_URL || "http://localhost:2024";
+  const assistantId = assistantIdParam || process.env.NEXT_PUBLIC_ASSISTANT_ID || "agent";
+
   const getThreads = useCallback(async (): Promise<Thread[]> => {
-    if (!apiUrl || !assistantId) return [];
-    const client = createClient(apiUrl, getApiKey() ?? undefined);
+    if (!apiUrl || !assistantId) {
+      console.log("Missing API URL or Assistant ID:", { apiUrl, assistantId });
+      return [];
+    }
+    
+    try {
+      const client = createClient(apiUrl, getApiKey() ?? undefined);
 
-    const threads = await client.threads.search({
-      metadata: {
-        ...getThreadSearchMetadata(assistantId),
-      },
-      limit: 100,
-    });
+      const threads = await client.threads.search({
+        metadata: {
+          ...getThreadSearchMetadata(assistantId),
+        },
+        limit: 100,
+      });
 
-    return threads;
+      console.log("Fetched threads:", threads);
+      return threads;
+    } catch (error) {
+      console.error("Error fetching threads:", error);
+      return [];
+    }
   }, [apiUrl, assistantId]);
 
   const value = {

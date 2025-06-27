@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Settings, CreditCard, BarChart3, MessageCircle, Users, Calendar, Crown } from "lucide-react";
+import { User, Settings, CreditCard, BarChart3, MessageCircle, Users, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,11 +21,11 @@ const mockUser: UserAccount = {
   email: "user@example.com",
   name: "John Doe",
   profilePictureUrl: "",
-  subscription: "pro",
-  monthlyMessageLimit: 1000,
-  currentMonthUsage: 450,
-  accountsLimit: 500,
-  currentAccountsCount: 127,
+  subscription: "free", // Keep for compatibility but won't be displayed
+  monthlyMessageLimit: 0, // Keep for compatibility but won't be displayed  
+  currentMonthUsage: 0, // Keep for compatibility but won't be displayed
+  accountsLimit: 0, // Keep for compatibility but won't be displayed
+  currentAccountsCount: 0, // Keep for compatibility but won't be displayed
   createdAt: "2024-01-15T00:00:00Z",
   lastLoginAt: "2024-01-20T10:30:00Z",
   isActive: true,
@@ -199,91 +199,35 @@ function InstagramCredentialsForm({ user, onUpdate }: {
         </div>
       </div>
 
-      <div className="flex gap-2 pt-4">
+      <div className="flex gap-2">
         <Button
           type="submit"
-          disabled={isLoading || !formData.instagramUsername || !formData.instagramPassword}
+          disabled={isLoading}
           className="flex-1"
         >
-          {isLoading ? "Saving..." : "Save Credentials"}
+          {isLoading ? "Updating..." : isSuccess ? "Updated!" : "Update Credentials"}
         </Button>
-        {isSuccess && (
-          <div className="flex items-center text-green-600 text-sm">
-            ✓ Saved successfully
-          </div>
+        {(formData.instagramUsername || formData.instagramPassword) && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setFormData({ instagramUsername: "", instagramPassword: "" });
+            }}
+          >
+            Clear
+          </Button>
         )}
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-        <div className="flex items-start gap-2">
-          <Instagram className="h-4 w-4 text-blue-600 mt-0.5" />
-          <div className="text-sm">
-            <p className="font-medium text-blue-900">Why do we need your credentials?</p>
-            <p className="text-blue-700 mt-1">
-              We use your Instagram credentials to send automated messages and discover accounts.
-              Your credentials are encrypted and never shared with third parties.
-            </p>
-          </div>
+      {isSuccess && (
+        <div className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <p className="text-sm text-green-700 dark:text-green-400">
+            ✓ Instagram credentials updated successfully
+          </p>
         </div>
-      </div>
+      )}
     </form>
-  );
-}
-
-function SubscriptionCard({ user }: { user: UserAccount }) {
-  const usagePercentage = (user.currentMonthUsage / user.monthlyMessageLimit) * 100;
-  const accountsPercentage = (user.currentAccountsCount / user.accountsLimit) * 100;
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              {user.subscription === "pro" && <Crown className="w-5 h-5 text-yellow-500" />}
-              {user.subscription.charAt(0).toUpperCase() + user.subscription.slice(1)} Plan
-            </CardTitle>
-            <CardDescription>
-              Your current subscription and usage
-            </CardDescription>
-          </div>
-          <Badge variant={user.subscription === "free" ? "secondary" : "default"}>
-            {user.subscription === "free" ? "Free" : user.subscription === "pro" ? "Pro" : "Enterprise"}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <div className="flex justify-between text-sm mb-2">
-            <span>Monthly Messages</span>
-            <span>{user.currentMonthUsage} / {user.monthlyMessageLimit}</span>
-          </div>
-          <Progress value={usagePercentage} className="h-2" />
-          <p className="text-xs text-gray-500 mt-1">
-            {user.monthlyMessageLimit - user.currentMonthUsage} messages remaining
-          </p>
-        </div>
-
-        <div>
-          <div className="flex justify-between text-sm mb-2">
-            <span>Instagram Accounts</span>
-            <span>{user.currentAccountsCount} / {user.accountsLimit}</span>
-          </div>
-          <Progress value={accountsPercentage} className="h-2" />
-          <p className="text-xs text-gray-500 mt-1">
-            {user.accountsLimit - user.currentAccountsCount} accounts available
-          </p>
-        </div>
-
-        {user.subscription === "free" && (
-          <div className="pt-4 border-t">
-            <Button className="w-full">
-              Upgrade to Pro
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 
@@ -324,20 +268,57 @@ export default function AccountPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Account Settings</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Manage your TopSeen account and subscription
+          Manage your TopSeen account settings
         </p>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="subscription">Subscription</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
-            <SubscriptionCard user={user} />
+            <Card>
+              <CardHeader>
+                <CardTitle>Account Information</CardTitle>
+                <CardDescription>Your TopSeen account details</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={user.profilePictureUrl} />
+                    <AvatarFallback>
+                      {user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{user.name || 'User'}</p>
+                    <p className="text-sm text-gray-500">{user.email}</p>
+                  </div>
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Account Status</span>
+                    <Badge variant={user.isActive ? "default" : "secondary"}>
+                      {user.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Member Since</span>
+                    <span>{new Date(user.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  {user.lastLoginAt && (
+                    <div className="flex justify-between text-sm">
+                      <span>Last Login</span>
+                      <span>{new Date(user.lastLoginAt).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader>
@@ -349,7 +330,7 @@ export default function AccountPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium">Campaign &quot;Fashion Influencers&quot; created</p>
+                      <p className="text-sm font-medium">Campaign "Fashion Influencers" created</p>
                       <p className="text-xs text-gray-500">2 hours ago</p>
                     </div>
                   </div>
@@ -365,51 +346,6 @@ export default function AccountPage() {
                     <div className="flex-1">
                       <p className="text-sm font-medium">12 new accounts added</p>
                       <p className="text-xs text-gray-500">2 days ago</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="subscription" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <SubscriptionCard user={user} />
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Billing Information</CardTitle>
-                <CardDescription>Manage your billing and payment methods</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <CreditCard className="w-5 h-5" />
-                    <div>
-                      <p className="text-sm font-medium">•••• •••• •••• 4242</p>
-                      <p className="text-xs text-gray-500">Expires 12/25</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm">Edit</Button>
-                </div>
-
-                <Button variant="outline" className="w-full">
-                  Add Payment Method
-                </Button>
-
-                <Separator />
-
-                <div>
-                  <h4 className="font-medium mb-2">Billing History</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Pro Plan - January 2024</span>
-                      <span>$29.00</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Pro Plan - December 2023</span>
-                      <span>$29.00</span>
                     </div>
                   </div>
                 </div>

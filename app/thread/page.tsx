@@ -8,6 +8,8 @@ import { Toaster } from "sonner";
 import React from "react";
 
 export default function ThreadPage(): React.ReactNode {
+
+
   return (
     <React.Suspense fallback={<div>Loading thread...</div>}>
       <Toaster />
