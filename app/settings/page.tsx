@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Settings, CreditCard, BarChart3, MessageCircle, Users, Calendar } from "lucide-react";
+import { User, Settings, CreditCard, BarChart3, MessageCircle, Users, Calendar, Plus, Trash2, Edit3, MoreVertical, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Gauge } from "@/components/ui/gauge";
-import { UserAccount } from "@/db/model";
+import { UserAccount, TopSeenRule } from "@/db/model";
 import { Instagram, Eye, EyeOff } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useTopSeenRules } from "@/lib/hooks/use-topseen-rules";
+import { toast } from "sonner";
 
 // Mock user data
 const mockUser: UserAccount = {
@@ -231,6 +237,258 @@ function InstagramCredentialsForm({ user, onUpdate }: {
   );
 }
 
+function TopSeenRulesManager() {
+  const { rules, isLoading, createRule, updateRule, deleteRule, toggleRule } = useTopSeenRules();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingRule, setEditingRule] = useState<TopSeenRule | null>(null);
+  const [newRuleName, setNewRuleName] = useState("");
+  const [newRuleDescription, setNewRuleDescription] = useState("");
+
+  const handleCreateRule = async () => {
+    if (!newRuleName.trim() || !newRuleDescription.trim()) {
+      toast.error("Please fill in both name and description");
+      return;
+    }
+
+    const result = await createRule(newRuleName.trim(), newRuleDescription.trim());
+    
+    if (result.success) {
+      toast.success("Rule created successfully!");
+      setNewRuleName("");
+      setNewRuleDescription("");
+      setIsCreateDialogOpen(false);
+    } else {
+      toast.error(result.error || "Failed to create rule");
+    }
+  };
+
+  const handleUpdateRule = async () => {
+    if (!editingRule || !newRuleName.trim() || !newRuleDescription.trim()) {
+      toast.error("Please fill in both name and description");
+      return;
+    }
+
+    const result = await updateRule(editingRule.id, {
+      name: newRuleName.trim(),
+      description: newRuleDescription.trim(),
+    });
+    
+    if (result.success) {
+      toast.success("Rule updated successfully!");
+      setEditingRule(null);
+      setNewRuleName("");
+      setNewRuleDescription("");
+    } else {
+      toast.error(result.error || "Failed to update rule");
+    }
+  };
+
+  const handleDeleteRule = async (id: string) => {
+    const result = await deleteRule(id);
+    
+    if (result.success) {
+      toast.success("Rule deleted successfully!");
+    } else {
+      toast.error(result.error || "Failed to delete rule");
+    }
+  };
+
+  const handleToggleRule = async (id: string) => {
+    const result = await toggleRule(id);
+    
+    if (result.success) {
+      toast.success("Rule status updated!");
+    } else {
+      toast.error(result.error || "Failed to update rule status");
+    }
+  };
+
+  const openEditDialog = (rule: TopSeenRule) => {
+    setEditingRule(rule);
+    setNewRuleName(rule.name);
+    setNewRuleDescription(rule.description);
+  };
+
+  const closeEditDialog = () => {
+    setEditingRule(null);
+    setNewRuleName("");
+    setNewRuleDescription("");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-gray-500">Loading rules...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-medium">Custom AI Rules</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Define custom instructions that will be included in AI prompts to control behavior and responses.
+          </p>
+        </div>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Rule
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Rule</DialogTitle>
+              <DialogDescription>
+                Add a custom instruction that will be included in AI prompts.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="rule-name">Rule Name</Label>
+                <Input
+                  id="rule-name"
+                  placeholder="e.g., Professional Tone"
+                  value={newRuleName}
+                  onChange={(e) => setNewRuleName(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="rule-description">Description/Instruction</Label>
+                <Textarea
+                  id="rule-description"
+                  placeholder="e.g., Always maintain a professional and formal tone in all responses..."
+                  value={newRuleDescription}
+                  onChange={(e) => setNewRuleDescription(e.target.value)}
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateRule}>Create Rule</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {rules.length === 0 ? (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <BookOpen className="w-12 h-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              No rules yet
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 text-center max-w-md mb-4">
+              Create your first custom AI rule to start controlling how the AI responds to your prompts.
+            </p>
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create First Rule
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {rules.map((rule) => (
+            <Card key={rule.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h4 className="font-medium">{rule.name}</h4>
+                      <Badge variant={rule.isActive ? "default" : "secondary"}>
+                        {rule.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      {rule.description}
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span>Created: {new Date(rule.createdAt).toLocaleDateString()}</span>
+                      <span>Updated: {new Date(rule.updatedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={rule.isActive}
+                      onCheckedChange={() => handleToggleRule(rule.id)}
+                    />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEditDialog(rule)}>
+                          <Edit3 className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteRule(rule.id)}
+                          className="text-red-600 dark:text-red-400"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Edit Rule Dialog */}
+      <Dialog open={!!editingRule} onOpenChange={(open) => !open && closeEditDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Rule</DialogTitle>
+            <DialogDescription>
+              Modify the custom instruction for AI prompts.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-rule-name">Rule Name</Label>
+              <Input
+                id="edit-rule-name"
+                placeholder="e.g., Professional Tone"
+                value={newRuleName}
+                onChange={(e) => setNewRuleName(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-rule-description">Description/Instruction</Label>
+              <Textarea
+                id="edit-rule-description"
+                placeholder="e.g., Always maintain a professional and formal tone in all responses..."
+                value={newRuleDescription}
+                onChange={(e) => setNewRuleDescription(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeEditDialog}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateRule}>Update Rule</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 export default function AccountPage() {
   const [user, setUser] = useState<UserAccount>(mockUser);
   const [instagramConnected, setInstagramConnected] = useState(false);
@@ -273,8 +531,9 @@ export default function AccountPage() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="rules">AI Rules</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -352,6 +611,23 @@ export default function AccountPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="rules" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5" />
+                TopSeen AI Rules
+              </CardTitle>
+              <CardDescription>
+                Create custom instructions that control how the AI behaves and responds to your prompts. These rules will be automatically included in all chat interactions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TopSeenRulesManager />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">

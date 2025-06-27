@@ -43,6 +43,7 @@ import {
 import { PromptBox } from "@/components/ui/chatgpt-prompt-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useTopSeenRules } from "@/lib/hooks/use-topseen-rules";
 
 function OpenGitHubRepo() {
   return (
@@ -89,6 +90,9 @@ export function Thread() {
   const stream = useStreamContext();
   const messages = stream.messages;
   const isLoading = stream.isLoading;
+
+  // Fetch user's custom rules
+  const { rules } = useTopSeenRules();
 
   const lastError = useRef<string | undefined>(undefined);
 
@@ -160,16 +164,20 @@ export function Thread() {
 
     const toolMessages = ensureToolCallsHaveResponses(stream.messages);
 
-    const context =
-      Object.keys(artifactContext).length > 0 ? artifactContext : undefined;
+    // Include custom rules in context
+    const activeRules = rules.filter(rule => rule.isActive);
+    const context = {
+      ...(Object.keys(artifactContext).length > 0 ? artifactContext : {}),
+      ...(activeRules.length > 0 && { topSeenRules: activeRules }),
+    };
 
     stream.submit(
-      { messages: [...toolMessages, newHumanMessage], context },
+      { messages: [...toolMessages, newHumanMessage], context: Object.keys(context).length > 0 ? context : undefined },
       {
         streamMode: ["values"],
         optimisticValues: (prev) => ({
           ...prev,
-          context,
+          context: Object.keys(context).length > 0 ? context : undefined,
           messages: [
             ...(prev.messages ?? []),
             ...toolMessages,
@@ -205,45 +213,10 @@ export function Thread() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] w-full bg-muted/40 dark:bg-black/80">
-      <div className="container mx-auto px-4 py-4 max-w-7xl h-[calc(100vh-5.5rem)]">
-        {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* Mobile menu toggle */}
-            <Button
-              className="lg:hidden hover:bg-gray-100"
-              variant="ghost"
-              size="sm"
-              onClick={() => setChatHistoryOpen((p) => !p)}
-            >
-              <PanelRightOpen className="size-4" />
-            </Button>
-            
-            <div className="flex items-center gap-3">
-              <LangGraphLogoSVG className="h-8 w-8" />
-              <div>
-                <h1 className="text-lg font-semibold">Agent Chat</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Chat with AI agents for your tasks
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <OpenGitHubRepo />
-            <TooltipIconButton
-              tooltip="New thread"
-              variant="ghost"
-              onClick={() => setThreadId(null)}
-            >
-              <SquarePen className="size-5" />
-            </TooltipIconButton>
-          </div>
-        </div>
+      <div className="container max-w-7xl h-screen flex items-center justify-center w-full">
 
         {/* Main Card with Threads and Chat */}
-        <Card className="flex h-[calc(100%-5rem)]">
+        <Card className="flex h-[calc(100%-5rem)] w-full">
           {/* Threads Panel - Left Side */}
           <div className="hidden lg:flex w-80 border-r border-border bg-background rounded-l-lg">
             <ThreadHistory />
@@ -253,8 +226,7 @@ export function Thread() {
           <div className="flex flex-col flex-1">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <LangGraphLogoSVG className="h-5 w-5" />
-                Agent Chat
+                Top Seen
                 {messages.length > 0 && (
                   <span className="text-sm font-normal text-gray-500">
                     ({messages.length} messages)
@@ -268,12 +240,11 @@ export function Thread() {
             <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <LangGraphLogoSVG className="h-12 w-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                     Start a conversation
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400 max-w-md">
-                    Ask me anything or get help with your tasks. I can assist with content creation, analysis, and more.
+                    Slide into anyone's DMs with Cursor for Instagram
                   </p>
                 </div>
               ) : (
@@ -319,7 +290,7 @@ export function Thread() {
                 disabled={isLoading}
                 value={input}
                 onChange={setInput}
-                className="rounded-[28px]"
+                className="rounded-[8px]"
                 onSubmit={handleSubmit}
                 onMoodChange={handleMoodChange}
                 additionalActions={

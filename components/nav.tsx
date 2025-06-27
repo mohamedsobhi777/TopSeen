@@ -9,10 +9,11 @@ import {
   PanelLeftIcon,
   InstagramIcon,
   SearchIcon,
-  UserIcon,
+  Settings,
   MicIcon,
   HelpCircleIcon,
   Bot,
+  Bed,
 } from "lucide-react";
 import { extractAndDecodeTripName } from "@/lib/utils";
 import { useRxData } from "rxdb-hooks";
@@ -231,7 +232,7 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
                   : "text-muted-foreground hover:text-foreground"
                 }`}
             >
-              <Bot className="h-5 w-5" />
+              <Bed className="h-5 w-5" />
               <span className="sr-only">Background Agents</span>
             </Link>
           </TooltipTrigger>
@@ -241,17 +242,17 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              href="/account"
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/account")
+              href="/settings"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/settings")
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:text-foreground"
                 }`}
             >
-              <UserIcon className="h-5 w-5" />
-              <span className="sr-only">Account</span>
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">Settings</span>
             </Link>
           </TooltipTrigger>
-          <TooltipContent side="right">Account</TooltipContent>
+          <TooltipContent side="right">Settings</TooltipContent>
         </Tooltip>
       </nav>
 

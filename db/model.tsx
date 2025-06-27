@@ -261,6 +261,17 @@ export interface AudioMessage extends DMMessage {
   isGenerated: boolean; // true if AI-generated, false if recorded
 }
 
+// TopSeen Rules - Custom AI instructions
+export interface TopSeenRule {
+  id: string;
+  userId: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // User account interface
 export interface UserAccount {
   id: string;
@@ -279,4 +290,5 @@ export interface UserAccount {
   voiceClones?: VoiceClone[];
   instagramUsername?: string;
   instagramPassword?: string;
+  topSeenRules?: TopSeenRule[]; // Custom AI instructions
 }

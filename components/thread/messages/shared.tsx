@@ -48,7 +48,7 @@ function ContentCopyable({
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.15 }}
           >
-            <CopyCheck className="text-green-500" />
+            <CopyCheck className="text-green-500 w-3.5 h-3.5" />
           </motion.div>
         ) : (
           <motion.div
@@ -58,7 +58,7 @@ function ContentCopyable({
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.15 }}
           >
-            <Copy />
+            <Copy className="w-3.5 h-3.5" />
           </motion.div>
         )}
       </AnimatePresence>

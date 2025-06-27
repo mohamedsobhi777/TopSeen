@@ -16,6 +16,16 @@ export async function POST(req: Request) {
 
         console.log("Messages received:", messages?.length || 0);
 
+        // Fetch user's custom TopSeen rules
+        const userId = 'default-user'; // Replace with actual user ID from auth
+        const rulesResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/topseen-rules?userId=${userId}`);
+        let customRules = [];
+        
+        if (rulesResponse.ok) {
+            const rulesData = await rulesResponse.json();
+            customRules = rulesData.rules.filter(rule => rule.isActive);
+        }
+
         // Fetch user credentials
         const instagramUsername = process.env.INSTAGRAM_USERNAME || "";
         const instagramPassword = process.env.INSTAGRAM_PASSWORD || "";
@@ -66,9 +76,24 @@ export async function POST(req: Request) {
 
         console.log(`Messages: ${JSON.stringify(convertToModelMessages(messages), null, 2)}`);
 
+        // Build custom rules section for system prompt
+        let customRulesSection = '';
+        if (customRules.length > 0) {
+            customRulesSection = `
+
+## Custom User Rules
+
+The user has defined the following custom rules that you MUST follow in all interactions:
+
+${customRules.map((rule, index) => `${index + 1}. **${rule.name}**: ${rule.description}`).join('\n')}
+
+These rules take priority and should be applied to all your responses.
+`;
+        }
+
         const result = streamText({
             model,
-            system: `You are TopSeen AI, an intelligent assistant for Instagram DM automation and influencer outreach. Your primary role is to help users discover, connect with, and manage relationships with Instagram influencers, creators, and businesses.
+            system: `You are TopSeen AI, an intelligent assistant for Instagram DM automation and influencer outreach. Your primary role is to help users discover, connect with, and manage relationships with Instagram influencers, creators, and businesses.${customRulesSection}
 
 You are having a conversation with the following user: ${process.env.RECEIVER_USERNAME}
 

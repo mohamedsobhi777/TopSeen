@@ -2,6 +2,12 @@ import { AIMessage, ToolMessage } from "@langchain/langgraph-sdk";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { 
+  getCustomToolCallComponent, 
+  getCustomToolResultComponent, 
+  hasCustomToolCallComponent, 
+  hasCustomToolResultComponent 
+} from "./custom-tools";
 
 function isComplexValue(value: any): boolean {
   return Array.isArray(value) || (typeof value === "object" && value !== null);
@@ -15,14 +21,21 @@ export function ToolCalls({
   if (!toolCalls || toolCalls.length === 0) return null;
 
   return (
-    <div className="mx-auto grid max-w-3xl grid-rows-[1fr_auto] gap-2">
+    <div className="grid gap-2">
       {toolCalls.map((tc, idx) => {
+        // Check if there's a custom component for this tool
+        if (hasCustomToolCallComponent(tc.name)) {
+          const CustomComponent = getCustomToolCallComponent(tc.name);
+          return <CustomComponent key={idx} toolCall={tc} />;
+        }
+
+        // Fallback to generic component
         const args = tc.args as Record<string, any>;
         const hasArgs = Object.keys(args).length > 0;
         return (
           <div
             key={idx}
-            className="overflow-hidden rounded-lg border border-gray-200"
+            className="overflow-hidden rounded-lg border border-gray-200 max-w-3xl"
           >
             <div className="border-b border-gray-200 bg-gray-50 px-4 py-2">
               <h3 className="font-medium text-gray-900">
@@ -66,6 +79,13 @@ export function ToolCalls({
 }
 
 export function ToolResult({ message }: { message: ToolMessage }) {
+  // Check if there's a custom component for this tool result
+  if (message.name && hasCustomToolResultComponent(message.name)) {
+    const CustomComponent = getCustomToolResultComponent(message.name);
+    return <CustomComponent message={message} />;
+  }
+
+  // Fallback to generic component
   const [isExpanded, setIsExpanded] = useState(false);
 
   let parsedContent: any;
@@ -94,8 +114,8 @@ export function ToolResult({ message }: { message: ToolMessage }) {
       : contentStr;
 
   return (
-    <div className="mx-auto grid max-w-3xl grid-rows-[1fr_auto] gap-2">
-      <div className="overflow-hidden rounded-lg border border-gray-200">
+    <div className="grid gap-2">
+      <div className="overflow-hidden rounded-lg border border-gray-200 max-w-3xl">
         <div className="border-b border-gray-200 bg-gray-50 px-4 py-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             {message.name ? (
