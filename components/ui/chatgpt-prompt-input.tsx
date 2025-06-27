@@ -35,18 +35,22 @@ const TelescopeIcon = (props: React.SVGProps<SVGSVGElement>) => ( <svg viewBox="
 const LightbulbIcon = (props: React.SVGProps<SVGSVGElement>) => ( <svg viewBox="0 0 24 24" fill="none" {...props}> <path d="M12 7C9.23858 7 7 9.23858 7 12C7 13.3613 7.54402 14.5955 8.42651 15.4972C8.77025 15.8484 9.05281 16.2663 9.14923 16.7482L9.67833 19.3924C9.86537 20.3272 10.6862 21 11.6395 21H12.3605C13.3138 21 14.1346 20.3272 14.3217 19.3924L14.8508 16.7482C14.9472 16.2663 15.2297 15.8484 15.5735 15.4972C16.456 14.5955 17 13.3613 17 12C17 9.23858 14.7614 7 12 7Z" stroke="currentColor" strokeWidth="2"/> <path d="M12 4V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> <path d="M18 6L19 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> <path d="M20 12H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> <path d="M4 12H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> <path d="M5 5L6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> <path d="M10 17H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> </svg> );
 // NEW: MicIcon
 const MicIcon = (props: React.SVGProps<SVGSVGElement>) => ( <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}> <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path> <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path> <line x1="12" y1="19" x2="12" y2="23"></line> </svg> );
+const BotIcon = (props: React.SVGProps<SVGSVGElement>) => ( <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}> <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"></path> <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"></path> <path d="M12 17C13.6569 17 15 15.6569 15 14C15 12.3431 13.6569 11 12 11C10.3431 11 9 12.3431 9 14C9 15.6569 10.3431 17 12 17Z"></path> </svg> );
 
 // Instagram Account Icon
 const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => ( <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}> <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect> <path d="m16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path> <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line> </svg> );
 
-const moodsList = [ { id: 'professional', name: 'Professional tone', shortName: 'Professional', icon: PencilIcon }, { id: 'friendly', name: 'Friendly and casual', shortName: 'Friendly', icon: LightbulbIcon }, { id: 'flirty', name: 'Flirty and playful', shortName: 'Flirty', icon: PaintBrushIcon }, { id: 'nerdy', name: 'Nerdy and technical', shortName: 'Nerdy', icon: TelescopeIcon }, { id: 'witty', name: 'Witty and humorous', shortName: 'Witty', icon: GlobeIcon }, ];
+const modesList = [ 
+  { id: 'agentMode', name: 'Agent mode', shortName: 'Agent', icon: BotIcon }, 
+  { id: 'chatMode', name: 'Chat mode', shortName: 'Ask', icon: LightbulbIcon }, 
+];
 
 import { useInstagramAccounts } from "@/lib/hooks/use-instagram-accounts";
 
 // --- The Final, Self-Contained PromptBox Component ---
 interface PromptBoxProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onSubmit' | 'value' | 'onChange'> {
-  onSubmit?: (value: string, mood?: string) => void;
-  onMoodChange?: (mood: string | null) => void;
+  onSubmit?: (value: string, mode?: string) => void;
+  onModeChange?: (mode: string | null) => void;
   disabled?: boolean;
   value?: string;
   onChange?: (value: string) => void;
@@ -54,13 +58,13 @@ interface PromptBoxProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaE
 }
 
 export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
-  ({ className, onSubmit, onMoodChange, disabled, value: controlledValue, onChange, additionalActions, ...props }, ref) => {
+  ({ className, onSubmit, onModeChange, disabled, value: controlledValue, onChange, additionalActions, ...props }, ref) => {
     const internalTextareaRef = React.useRef<HTMLTextAreaElement>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const autocompleteRef = React.useRef<HTMLDivElement>(null);
     const [internalValue, setInternalValue] = React.useState("");
     const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-    const [selectedMood, setSelectedMood] = React.useState<string | null>(null);
+    const [selectedMode, setSelectedMode] = React.useState<string | null>("agentMode");
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isImageDialogOpen, setIsImageDialogOpen] = React.useState(false);
     
@@ -221,7 +225,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
     const handleSubmit = (e: React.FormEvent) => { 
       e.preventDefault(); 
       if (value.trim() && onSubmit) { 
-        onSubmit(value, selectedMood || undefined); 
+        onSubmit(value, selectedMode || undefined); 
         if (controlledValue !== undefined) {
           // In controlled mode, let parent handle clearing
           if (onChange) onChange("");
@@ -232,17 +236,17 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       } 
     };
     
-    const handleMoodChange = (moodId: string) => { 
-      setSelectedMood(moodId); 
-      if (onMoodChange) onMoodChange(moodId); 
+    const handleModeChange = (modeId: string) => { 
+      setSelectedMode(modeId); 
+      if (onModeChange) onModeChange(modeId); 
     };
     
     const handlePlusClick = () => { fileInputRef.current?.click(); };
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (file && file.type.startsWith("image/")) { const reader = new FileReader(); reader.onloadend = () => { setImagePreview(reader.result as string); }; reader.readAsDataURL(file); } event.target.value = ""; };
     const handleRemoveImage = (e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); setImagePreview(null); if(fileInputRef.current) { fileInputRef.current.value = ""; } };
     const hasValue = value.trim().length > 0 || imagePreview;
-    const activeMood = selectedMood ? moodsList.find(m => m.id === selectedMood) : null;
-    const ActiveMoodIcon = activeMood?.icon;
+    const activeMode = selectedMode ? modesList.find(m => m.id === selectedMode) : null;
+    const ActiveModeIcon = activeMode?.icon;
 
     return (
       <form onSubmit={handleSubmit} className={cn("relative flex flex-col rounded-[28px] p-2 shadow-sm transition-colors bg-white border dark:bg-[#303030] dark:border-transparent cursor-text", className)}>
@@ -320,25 +324,25 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                     <PopoverTrigger asChild>
                       <button type="button" className="flex h-6 items-center gap-2 rounded-full p-2 text-xs text-foreground dark:text-white transition-colors hover:bg-accent dark:hover:bg-[#515151] focus-visible:outline-none focus-visible:ring-ring">
                         <Settings2Icon className="h-4 w-4" />
-                        {!selectedMood && 'Mood'}
+                        {!selectedMode && 'Mode'}
                       </button>
                     </PopoverTrigger>
                   </TooltipTrigger>
-                  <TooltipContent side="top" showArrow={true}><p>Choose Mood</p></TooltipContent>
+                  <TooltipContent side="top" showArrow={true}><p>Choose Mode</p></TooltipContent>
                 </Tooltip>
                 <PopoverContent side="top" align="start">
                   <div className="flex flex-col gap-1">
-                    {moodsList.map(mood => ( <button key={mood.id} onClick={() => { handleMoodChange(mood.id); setIsPopoverOpen(false); }} className="flex w-full items-center gap-2 rounded-md p-2 text-left text-sm hover:bg-accent dark:hover:bg-[#515151]"> <mood.icon className="h-4 w-4" /> <span>{mood.name}</span> </button> ))}
+                    {modesList.map(mode => ( <button key={mode.id} onClick={() => { handleModeChange(mode.id); setIsPopoverOpen(false); }} className="flex w-full items-center gap-2 rounded-md p-2 text-left text-sm hover:bg-accent dark:hover:bg-[#515151]"> <mode.icon className="h-4 w-4" /> <span>{mode.name}</span> </button> ))}
                   </div>
                 </PopoverContent>
               </Popover>
 
-              {activeMood && (
+              {activeMode && (
                 <>
                   <div className="h-4 w-px bg-border dark:bg-gray-600" />
-                  <button onClick={() => setSelectedMood(null)} className="flex h-8 items-center gap-2 rounded-full px-2 text-sm dark:hover:bg-[#3b4045] hover:bg-accent cursor-pointer dark:text-[#99ceff] text-[#2294ff] transition-colors flex-row items-center justify-center">
-                    {ActiveMoodIcon && <ActiveMoodIcon className="h-4 w-4" />}
-                    {activeMood.shortName}
+                  <button onClick={() => setSelectedMode(null)} className="flex h-8 items-center gap-2 rounded-full px-2 text-sm dark:hover:bg-[#3b4045] hover:bg-accent cursor-pointer dark:text-[#99ceff] text-[#2294ff] transition-colors flex-row items-center justify-center">
+                    {ActiveModeIcon && <ActiveModeIcon className="h-4 w-4" />}
+                    {activeMode.shortName}
                     <XIcon className="h-4 w-4" />
                   </button>
                 </>

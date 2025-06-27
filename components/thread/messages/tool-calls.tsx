@@ -79,14 +79,15 @@ export function ToolCalls({
 }
 
 export function ToolResult({ message }: { message: ToolMessage }) {
+  // Fallback to generic component
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   // Check if there's a custom component for this tool result
   if (message.name && hasCustomToolResultComponent(message.name)) {
     const CustomComponent = getCustomToolResultComponent(message.name);
     return <CustomComponent message={message} />;
   }
 
-  // Fallback to generic component
-  const [isExpanded, setIsExpanded] = useState(false);
 
   let parsedContent: any;
   let isJsonContent = false;

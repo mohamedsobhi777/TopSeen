@@ -589,7 +589,7 @@ export default function AccountPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium">Campaign "Fashion Influencers" created</p>
+                      <p className="text-sm font-medium">Campaign &quot;Fashion Influencers&quot; created</p>
                       <p className="text-xs text-gray-500">2 hours ago</p>
                     </div>
                   </div>

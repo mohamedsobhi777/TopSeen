@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRxCollection, useRxData } from "rxdb-hooks";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -78,7 +78,7 @@ const listColors = [
   { name: "Gray", value: "gray", class: "bg-gray-100 text-gray-700" },
 ];
 
-export default function LibraryPage() {
+function LibraryPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -906,5 +906,13 @@ export default function LibraryPage() {
           </DialogContent>
         </Dialog>
       </div>
+  );
+}
+
+export default function LibraryPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LibraryPageContent />
+    </Suspense>
   );
 } 

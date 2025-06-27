@@ -195,7 +195,7 @@ export default function ListDetailPage() {
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold mb-4">List Not Found</h1>
-          <p className="text-gray-600 mb-4">The list you're looking for doesn't exist or has been deleted.</p>
+          <p className="text-gray-600 mb-4">The list you&apos;re looking for doesn&apos;t exist or has been deleted.</p>
           <Button onClick={() => router.push('/library')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Library

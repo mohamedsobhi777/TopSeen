@@ -210,22 +210,6 @@ export function DesktopNav({ onTourTrigger }: { onTourTrigger?: () => void }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              href="/thread"
-              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/thread")
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-                }`}
-            >
-              <Bot className="h-5 w-5" />
-              <span className="sr-only">AI Chat</span>
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">AI Chat</TooltipContent>
-        </Tooltip>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
               href="/background-agents"
               className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8 ${isActive("/background-agents")
                   ? "bg-accent text-accent-foreground"

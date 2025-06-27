@@ -1,7 +1,7 @@
 "use client";
 
 import { parseAsString, useQueryState } from "nuqs";
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import InstagramSearchInterface from "@/components/ui/instagram-search/InstagramSearchInterface";
 import {
@@ -223,7 +223,7 @@ function SearchResultCard({ result }: { result: any }) {
   return null;
 }
 
-export default function SearchResultsPage() {
+function SearchResultsContent() {
   const [query, setQuery] = useQueryState("query", parseAsString.withDefault(""));
 
   // Filter and sort results based on query and filters
@@ -298,5 +298,24 @@ export default function SearchResultsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function SearchResultsLoadingFallback() {
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Search Results</h1>
+        <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function SearchResultsPage() {
+  return (
+    <Suspense fallback={<SearchResultsLoadingFallback />}>
+      <SearchResultsContent />
+    </Suspense>
   );
 } 

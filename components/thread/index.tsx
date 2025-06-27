@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useStreamContext } from "@/providers/Stream";
 import { useState } from "react";
@@ -70,73 +70,25 @@ function OpenGitHubRepo() {
 }
 
 export function Thread() {
+  const [selectedMode, setSelectedMode] = useState<string | null>("agentMode");
+
+  const { rules } = useTopSeenRules();
+
+  const [input, setInput] = useState<string>("");
+  const [firstTokenReceived, setFirstTokenReceived] = useState(false);
+  const prevMessageLength = useRef(0);
+
   const [artifactContext, setArtifactContext] = useArtifactContext();
   const [artifactOpen, closeArtifact] = useArtifactOpen();
-
-  const [threadId, _setThreadId] = useQueryState("threadId");
-  const [chatHistoryOpen, setChatHistoryOpen] = useQueryState(
-    "chatHistoryOpen",
-    parseAsBoolean.withDefault(true),
-  );
-  const [hideToolCalls, setHideToolCalls] = useQueryState(
-    "hideToolCalls",
-    parseAsBoolean.withDefault(false),
-  );
-  const [input, setInput] = useState("");
-  const [selectedMood, setSelectedMood] = useState<string | null>(null);
-  const [firstTokenReceived, setFirstTokenReceived] = useState(false);
-  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
 
   const stream = useStreamContext();
   const messages = stream.messages;
   const isLoading = stream.isLoading;
 
-  // Fetch user's custom rules
-  const { rules } = useTopSeenRules();
-
-  const lastError = useRef<string | undefined>(undefined);
-
-  const setThreadId = (id: string | null) => {
-    _setThreadId(id);
-
-    // close artifact and reset artifact context
-    closeArtifact();
-    setArtifactContext({});
-  };
-
   useEffect(() => {
-    if (!stream.error) {
-      lastError.current = undefined;
-      return;
-    }
-    try {
-      const message = (stream.error as any).message;
-      if (!message || lastError.current === message) {
-        // Message has already been logged. do not modify ref, return early.
-        return;
-      }
-
-      // Message is defined, and it has not been logged yet. Save it, and send the error
-      lastError.current = message;
-      toast.error("An error occurred. Please try again.", {
-        description: (
-          <p>
-            <strong>Error:</strong> <code>{message}</code>
-          </p>
-        ),
-        richColors: true,
-        closeButton: true,
-      });
-    } catch {
-      // no-op
-    }
-  }, [stream.error]);
-
-  // TODO: this should be part of the useStream hook
-  const prevMessageLength = useRef(0);
-  useEffect(() => {
+    // If we've received messages and this is the first time (loading just finished)
     if (
-      messages.length !== prevMessageLength.current &&
+      prevMessageLength.current === 0 &&
       messages?.length &&
       messages[messages.length - 1].type === "ai"
     ) {
@@ -146,29 +98,27 @@ export function Thread() {
     prevMessageLength.current = messages.length;
   }, [messages]);
 
-  const handleSubmit = (value: string, mood?: string) => {
+  const handleSubmit = (value: string, mode?: string) => {
     if (value.trim().length === 0 || isLoading)
       return;
     setFirstTokenReceived(false);
-
-    // Apply mood to the message if selected
-    const messageText = mood ? `[Mood: ${mood}] ${value}` : value;
 
     const newHumanMessage: Message = {
       id: uuidv4(),
       type: "human",
       content: [
-        { type: "text", text: messageText }
+        { type: "text", text: value }
       ] as Message["content"],
     };
 
     const toolMessages = ensureToolCallsHaveResponses(stream.messages);
 
-    // Include custom rules in context
+    // Include custom rules and mode in context
     const activeRules = rules.filter(rule => rule.isActive);
     const context = {
       ...(Object.keys(artifactContext).length > 0 ? artifactContext : {}),
       ...(activeRules.length > 0 && { topSeenRules: activeRules }),
+      ...(mode && { mode: mode }), // Add mode to context
     };
 
     stream.submit(
@@ -184,14 +134,20 @@ export function Thread() {
             newHumanMessage,
           ],
         }),
+        config: {
+          configurable: {
+            mode,
+            rulesList: activeRules.map(rule => rule.description),
+          }
+        }
       },
     );
 
     setInput("");
   };
 
-  const handleMoodChange = (mood: string | null) => {
-    setSelectedMood(mood);
+  const handleModeChange = (mode: string | null) => {
+    setSelectedMode(mode);
   };
 
   const handleRegenerate = (
@@ -206,7 +162,7 @@ export function Thread() {
     });
   };
 
-  const chatStarted = !!threadId || !!messages.length;
+  // const chatStarted = !!stream.threadId || !!messages.length;
   const hasNoAIOrToolMessages = !messages.find(
     (m) => m.type === "ai" || m.type === "tool",
   );
@@ -237,14 +193,14 @@ export function Thread() {
             <Separator />
 
             {/* Messages */}
-            <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col">
+            <CardContent className="flex-1 overflow-y-auto h-full p-4 space-y-4 flex flex-col">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                     Start a conversation
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400 max-w-md">
-                    Slide into anyone's DMs with Cursor for Instagram
+                    Slide into anyone&apos;s DMs with Cursor for Instagram
                   </p>
                 </div>
               ) : (
@@ -292,14 +248,14 @@ export function Thread() {
                 onChange={setInput}
                 className="rounded-[8px]"
                 onSubmit={handleSubmit}
-                onMoodChange={handleMoodChange}
+                onModeChange={handleModeChange}
                 additionalActions={
                   <>
                     <button
                       type="button"
                       onClick={() => {
                         setInput("");
-                        setSelectedMood(null);
+                        setSelectedMode("agentMode");
                       }}
                       disabled={isLoading}
                       className="flex h-6 w-6 items-center justify-center rounded-full text-black dark:text-gray-300 hover:text-gray-700 dark:hover:text-white transition-colors hover:bg-accent dark:hover:bg-[#515151] focus-visible:outline-none disabled:opacity-50"

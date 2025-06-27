@@ -122,7 +122,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40 dark:bg-black/80">
+    <div className="flex h-screen w-full justify-center items-center flex-col bg-muted/40 dark:bg-black/80">
 
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
         {/* Logo */}
@@ -285,7 +285,6 @@ export default function HomePage() {
           )}
         </AnimatePresence>
       </div>
-
 
       <ProductTour
         open={tourOpen}

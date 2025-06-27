@@ -1,34 +1,41 @@
 import { AIMessage, ToolMessage } from "@langchain/langgraph-sdk";
-import { InstagramSendMessageToolCall, InstagramSendMessageToolResult } from "./instagram-dm-components";
+import {
+  InstagramSendMessageToolCall,
+  InstagramSendMessageToolResult,
+  InstagramSendPhotoMessageToolCall,
+  InstagramSendPhotoMessageToolResult,
+  MemeContextProtocolToolCall,
+  MemeContextProtocolToolResult
+} from "./instagram-dm-components";
 
-// Tool Call Component Map
-const TOOL_CALL_COMPONENTS: Record<string, React.ComponentType<{ toolCall: NonNullable<AIMessage["tool_calls"]>[0] }>> = {
+// Registry for custom tool call components
+const customToolCallComponents: Record<string, React.ComponentType<any>> = {
   "mcp__instagram_dms__send_message": InstagramSendMessageToolCall,
-  // Add more custom tool call components here
+  "mcp__instagram_dms__send_photo_message": () => null,
+  "mcp__hf-mcp-server__gr3_agents_mcp_hackathon_meme_context_protocol": () => null,
 };
 
-// Tool Result Component Map  
-const TOOL_RESULT_COMPONENTS: Record<string, React.ComponentType<{ message: ToolMessage }>> = {
+// Registry for custom tool result components  
+const customToolResultComponents: Record<string, React.ComponentType<any>> = {
   "mcp__instagram_dms__send_message": InstagramSendMessageToolResult,
-  // Add more custom tool result components here
+  "mcp__instagram_dms__send_photo_message": InstagramSendPhotoMessageToolResult,
+  "mcp__hf-mcp-server__gr3_agents_mcp_hackathon_meme_context_protocol": MemeContextProtocolToolResult,
 };
 
-// Function to get custom tool call component
-export function getCustomToolCallComponent(toolName: string) {
-  return TOOL_CALL_COMPONENTS[toolName];
-}
-
-// Function to get custom tool result component
-export function getCustomToolResultComponent(toolName: string) {
-  return TOOL_RESULT_COMPONENTS[toolName];
-}
-
-// Function to check if a tool has a custom component
+// Helper functions to check if custom components exist
 export function hasCustomToolCallComponent(toolName: string): boolean {
-  return toolName in TOOL_CALL_COMPONENTS;
+  return toolName in customToolCallComponents;
 }
 
-// Function to check if a tool result has a custom component
 export function hasCustomToolResultComponent(toolName: string): boolean {
-  return toolName in TOOL_RESULT_COMPONENTS;
+  return toolName in customToolResultComponents;
+}
+
+// Helper functions to get custom components
+export function getCustomToolCallComponent(toolName: string): React.ComponentType<any> | null {
+  return customToolCallComponents[toolName] || null;
+}
+
+export function getCustomToolResultComponent(toolName: string): React.ComponentType<any> | null {
+  return customToolResultComponents[toolName] || null;
 } 

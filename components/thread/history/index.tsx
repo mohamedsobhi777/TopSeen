@@ -101,7 +101,7 @@ export default function ThreadHistory() {
       .then(setThreads)
       .catch(console.error)
       .finally(() => setThreadsLoading(false));
-  }, []);
+  }, [getThreads, setThreads, setThreadsLoading]);
 
   return (
     <>
@@ -112,7 +112,7 @@ export default function ThreadHistory() {
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => window.location.href = '/thread'}
+            onClick={() => window.location.href = '/'}
             className="h-8 w-8 p-0"
           >
             <SquarePen className="h-4 w-4" />

@@ -62,7 +62,7 @@ interface BackgroundAgent {
       id: string;
       content: string;
       delay: number; // hours
-      mood?: string;
+      mode?: string;
     }[];
   };
   targetAccounts: string[]; // Account IDs from library
@@ -98,13 +98,13 @@ const sampleAgents: BackgroundAgent[] = [
           id: "msg1",
           content: "Hi! I love your content about sustainable fashion. Would you be interested in collaborating?",
           delay: 0,
-          mood: "friendly"
+          mode: "agentMode"
         },
         {
           id: "msg2",
           content: "Just following up on my previous message. Let me know if you'd like to discuss a potential partnership!",
           delay: 72,
-          mood: "professional"
+          mode: "ask"
         }
       ]
     },
@@ -137,7 +137,7 @@ const sampleAgents: BackgroundAgent[] = [
           id: "msg1",
           content: "Thanks for following! Excited to connect with fellow entrepreneurs 🚀",
           delay: 24,
-          mood: "friendly"
+          mode: "agentMode"
         }
       ]
     },
@@ -170,7 +170,7 @@ const sampleAgents: BackgroundAgent[] = [
           id: "msg1",
           content: "Love your healthy recipes! Would you be interested in trying our new product?",
           delay: 0,
-          mood: "friendly"
+          mode: "agentMode"
         }
       ]
     },
